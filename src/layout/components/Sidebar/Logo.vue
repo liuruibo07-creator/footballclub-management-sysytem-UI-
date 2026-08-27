@@ -25,7 +25,7 @@ defineProps({
   }
 })
 
-const title = import.meta.env.VITE_APP_TITLE;
+const title = "俱乐部管理系统";
 const settingsStore = useSettingsStore();
 const sideTheme = computed(() => settingsStore.sideTheme);
 </script>
@@ -45,19 +45,25 @@ const sideTheme = computed(() => settingsStore.sideTheme);
   width: 100%;
   height: 50px;
   line-height: 50px;
-  background: #2b2f3a;
+  background: #cdeaf8;
   text-align: center;
   overflow: hidden;
 
   & .sidebar-logo-link {
+    display: flex;
+    align-items: center;
     height: 100%;
     width: 100%;
+    padding: 0 16px;
+    box-sizing: border-box;
+    text-align: left;
 
     & .sidebar-logo {
       width: 32px;
       height: 32px;
-      vertical-align: middle;
-      margin-right: 12px;
+      flex-shrink: 0;
+      margin-right: 10px;
+      transform: translateY(6px);
     }
 
     & .sidebar-title {
@@ -68,13 +74,18 @@ const sideTheme = computed(() => settingsStore.sideTheme);
       line-height: 50px;
       font-size: 14px;
       font-family: Avenir, Helvetica Neue, Arial, Helvetica, sans-serif;
-      vertical-align: middle;
+      white-space: nowrap;
     }
   }
 
   &.collapse {
+    .sidebar-logo-link {
+      justify-content: center;
+      padding: 0;
+    }
+
     .sidebar-logo {
-      margin-right: 0px;
+      margin-right: 0;
     }
   }
 }

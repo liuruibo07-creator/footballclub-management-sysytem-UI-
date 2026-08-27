@@ -50,24 +50,37 @@
       <el-table
          v-if="refreshTable"
          v-loading="loading"
+         class="dept-table"
          :data="deptList"
          row-key="deptId"
          :default-expand-all="isExpandAll"
+         :row-class-name="getRowClassName"
          :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
       >
-         <el-table-column prop="deptName" label="部门名称" width="260"></el-table-column>
-         <el-table-column prop="orderNum" label="排序" width="200"></el-table-column>
-         <el-table-column prop="status" label="状态" width="100">
+         <el-table-column prop="orderNum" label="排序" align="center" width="90" />
+         <el-table-column prop="deptName" label="部门名称" min-width="280" show-overflow-tooltip>
+            <template #default="scope">
+               <span class="dept-name">{{ scope.row.deptName }}</span>
+            </template>
+         </el-table-column>
+         <el-table-column prop="leader" label="员工姓名" min-width="160" show-overflow-tooltip>
+            <template #default="scope">
+               <span :class="{ 'empty-value': !scope.row.leader }">
+                  {{ scope.row.leader || '—' }}
+               </span>
+            </template>
+         </el-table-column>
+         <el-table-column prop="status" label="状态" align="center" width="110">
             <template #default="scope">
                <dict-tag :options="sys_normal_disable" :value="scope.row.status" />
             </template>
          </el-table-column>
-         <el-table-column label="创建时间" align="center" prop="createTime" width="200">
+         <el-table-column label="创建时间" align="center" prop="createTime" width="190">
             <template #default="scope">
                <span>{{ parseTime(scope.row.createTime) }}</span>
             </template>
          </el-table-column>
-         <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+         <el-table-column label="操作" align="center" width="230" fixed="right" class-name="small-padding">
             <template #default="scope">
                <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['system:dept:edit']">修改</el-button>
                <el-button link type="primary" icon="Plus" @click="handleAdd(scope.row)" v-hasPermi="['system:dept:add']">新增</el-button>
@@ -93,8 +106,8 @@
                   </el-form-item>
                </el-col>
                <el-col :span="12">
-                  <el-form-item label="部门名称" prop="deptName">
-                     <el-input v-model="form.deptName" placeholder="请输入部门名称" />
+                  <el-form-item label="职位名称" prop="deptName">
+                     <el-input v-model="form.deptName" placeholder="请输入职位名称" />
                   </el-form-item>
                </el-col>
                <el-col :span="12">
@@ -103,8 +116,8 @@
                   </el-form-item>
                </el-col>
                <el-col :span="12">
-                  <el-form-item label="负责人" prop="leader">
-                     <el-input v-model="form.leader" placeholder="请输入负责人" maxlength="20" />
+                  <el-form-item label="员工姓名" prop="leader">
+                     <el-input v-model="form.leader" placeholder="请输入员工姓名" maxlength="20" />
                   </el-form-item>
                </el-col>
                <el-col :span="12">
@@ -163,7 +176,7 @@ const data = reactive({
   },
   rules: {
     parentId: [{ required: true, message: "上级部门不能为空", trigger: "blur" }],
-    deptName: [{ required: true, message: "部门名称不能为空", trigger: "blur" }],
+    deptName: [{ required: true, message: "职位名称不能为空", trigger: "blur" }],
     orderNum: [{ required: true, message: "显示排序不能为空", trigger: "blur" }],
     email: [{ type: "email", message: "请输入正确的邮箱地址", trigger: ["blur", "change"] }],
     phone: [{ pattern: /^1[3|4|5|6|7|8|9][0-9]\d{8}$/, message: "请输入正确的手机号码", trigger: "blur" }]
@@ -228,6 +241,12 @@ function toggleExpandAll() {
     refreshTable.value = true;
   });
 }
+/** 根据节点类型突出显示组织层级 */
+function getRowClassName({ row }) {
+  if (Number(row.parentId) === 0) return "root-dept-row";
+  if (row.children?.length) return "group-dept-row";
+  return "employee-row";
+}
 /** 修改按钮操作 */
 function handleUpdate(row) {
   reset();
@@ -237,7 +256,7 @@ function handleUpdate(row) {
   getDept(row.deptId).then(response => {
     form.value = response.data;
     open.value = true;
-    title.value = "修改部门";
+    title.value = "修改部门员工";
   });
 }
 /** 提交按钮 */
@@ -272,3 +291,50 @@ function handleDelete(row) {
 
 getList();
 </script>
+
+<style scoped>
+.dept-table {
+  --el-table-header-bg-color: #f7f9fc;
+  --el-table-row-hover-bg-color: #eef6ff;
+  border: 1px solid #e7ebf2;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.dept-name {
+  color: #303b4f;
+}
+
+.empty-value {
+  color: #b8bec9;
+}
+
+:deep(.dept-table .el-table__header-wrapper th.el-table__cell) {
+  height: 48px;
+  color: #344054;
+  font-weight: 600;
+  background-color: #f7f9fc;
+}
+
+:deep(.dept-table .el-table__row td.el-table__cell) {
+  height: 52px;
+}
+
+:deep(.dept-table .root-dept-row td.el-table__cell) {
+  font-weight: 600;
+  background-color: #f3f7fd;
+}
+
+:deep(.dept-table .group-dept-row td.el-table__cell) {
+  font-weight: 500;
+  background-color: #fafcff;
+}
+
+:deep(.dept-table .el-table__body tr:hover > td.el-table__cell) {
+  background-color: #eef6ff !important;
+}
+
+:deep(.dept-table .el-table__inner-wrapper::before) {
+  display: none;
+}
+</style>
