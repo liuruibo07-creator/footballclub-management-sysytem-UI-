@@ -312,7 +312,11 @@ function handleAdd() {
 /** 修改按钮操作 */
 function handleUpdate(row) {
   reset();
-  const _id = row.id || ids.value
+  const _id = row?.id ?? ids.value[0];
+  if (_id == null) {
+    proxy.$modal.msgError("该记录缺少主键 ID，请先修复数据库中的伤病记录");
+    return;
+  }
   getInjury(_id).then(response => {
     form.value = response.data;
     open.value = true;
