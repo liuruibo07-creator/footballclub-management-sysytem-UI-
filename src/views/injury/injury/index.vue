@@ -79,7 +79,11 @@
 
     <el-table v-loading="loading" :data="injuryList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="序号" align="center" prop="id" />
+      <el-table-column label="序号" align="center" width="80">
+        <template #default="scope">
+          {{ (queryParams.pageNum - 1) * queryParams.pageSize + scope.$index + 1 }}
+        </template>
+      </el-table-column>
       <el-table-column label="球员" align="center" prop="playerName">
         <template #default="scope">
           <span>{{ scope.row.playerName || scope.row.playerId }}</span>
@@ -113,8 +117,10 @@
       </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template #default="scope">
-          <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['injury:injury:edit']">修改</el-button>
-          <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['injury:injury:remove']">删除</el-button>
+          <div class="action-buttons">
+            <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['injury:injury:edit']">修改</el-button>
+            <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['injury:injury:remove']">删除</el-button>
+          </div>
         </template>
       </el-table-column>
     </el-table>
@@ -366,3 +372,12 @@ function handleExport() {
 getList();
 getPlayerOptions();
 </script>
+
+<style scoped>
+.action-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+</style>
