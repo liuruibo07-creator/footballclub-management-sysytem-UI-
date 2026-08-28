@@ -143,6 +143,7 @@
 import { listMatch, addMatch, updateMatch } from "@/api/match/match";
 
 const { proxy } = getCurrentInstance();
+const route = useRoute();
 const { status, competition_name, competition_type } = proxy.useDict('status', 'competition_name', 'competition_type');
 
 const matchList = ref([]);
@@ -150,14 +151,14 @@ const open = ref(false);
 const loading = ref(true);
 const total = ref(0);
 const title = ref("");
-const activeTab = ref("all");
+const activeTab = ref(route.query.status === "1" ? "1" : "all");
 
 const data = reactive({
   form: {},
   queryParams: {
     pageNum: 1,
     pageSize: 10,
-    status: null,
+    status: route.query.status === "1" ? 1 : null,
     competitionName: null,
   },
   rules: {
@@ -262,6 +263,17 @@ function handleQuery() {
   queryParams.value.pageNum = 1;
   getList();
 }
+
+/** 从首页进入或返回缓存页面时，同步“已完赛”筛选 */
+watch(() => route.query.status, routeStatus => {
+  const normalizedStatus = routeStatus === "1" ? 1 : null;
+  if (queryParams.value.status !== normalizedStatus) {
+    queryParams.value.status = normalizedStatus;
+    activeTab.value = normalizedStatus === 1 ? "1" : "all";
+    queryParams.value.pageNum = 1;
+    getList();
+  }
+});
 
 /** 重置按钮操作 */
 function resetQuery() {

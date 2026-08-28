@@ -29,33 +29,34 @@
     </section>
 
     <div class="dashboard-grid">
-      <section class="panel season-panel" aria-labelledby="season-title">
+      <section class="panel season-panel" aria-labelledby="season-title" v-loading="seasonLoading">
         <header class="panel-header"><h2 id="season-title">赛季概览</h2></header>
         <div class="season-stats">
           <div class="stat-item">
             <span>联赛排名</span>
-            <strong>14<small>/16</small></strong>
+            <strong>{{ seasonOverview.rank || '--' }}<small>/{{ seasonOverview.totalTeams || '--' }}</small></strong>
           </div>
           <div class="stat-item">
             <span>积分</span>
-            <strong>18</strong>
+            <strong>{{ seasonOverview.points }}</strong>
           </div>
           <div class="stat-item record-stat">
             <span>战绩</span>
-            <strong><em>7</em>胜 <em>7</em>平 <em>9</em>负</strong>
+            <strong><em>{{ seasonOverview.wins }}</em>胜 <em>{{ seasonOverview.draws }}</em>平 <em>{{ seasonOverview.losses }}</em>负</strong>
           </div>
         </div>
         <div class="recent-block">
           <h3>近期状态</h3>
-          <div class="form-list">
-            <div v-for="match in recentMatches" :key="match.round" class="form-item">
-              <span class="result-chip" :class="match.tone">{{ match.result }}</span>
-              <strong>{{ match.score }}</strong>
-              <small>{{ match.round }}</small>
+          <div v-if="recentMatches.length > 0" class="form-list">
+            <div v-for="match in recentMatches" :key="`${match.roundNo}-${match.matchDate}`" class="form-item">
+              <span class="result-chip" :class="getResultTone(match.result)">{{ getResultLabel(match.result) }}</span>
+              <strong>{{ match.teamScore }}-{{ match.opponentScore }}</strong>
+              <small>第{{ match.roundNo }}轮</small>
             </div>
           </div>
+          <div v-else-if="!seasonLoading" class="season-empty">暂无已完成比赛</div>
         </div>
-        <button class="text-link season-link" type="button" @click="showMessage('赛季数据')">
+        <button class="text-link season-link" type="button" @click="viewAllMatches">
           查看全部 <el-icon><Right /></el-icon>
         </button>
       </section>
@@ -101,6 +102,7 @@
 import { Calendar, Clock, OfficeBuilding, Right } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { getPendingEventSummary } from '@/api/system/event'
+import { getSeasonOverview } from '@/api/match/match'
 import tianjinLogo from '@/assets/images/tianjin-jinmen-tiger.png'
 import qingdaoLogo from '@/assets/images/qingdao-west-coast.png'
 
@@ -111,14 +113,17 @@ const pendingLoading = ref(false)
 const pendingSchedules = ref([])
 const pendingTotal = ref(0)
 const pendingRemaining = ref(0)
-
-const recentMatches = [
-  { result: '平', score: '0-0', round: '第24轮', tone: 'draw' },
-  { result: '负', score: '2-4', round: '第23轮', tone: 'loss' },
-  { result: '负', score: '1-2', round: '第22轮', tone: 'loss' },
-  { result: '胜', score: '3-2', round: '第21轮', tone: 'win' },
-  { result: '胜', score: '2-0', round: '第20轮', tone: 'win' }
-]
+const seasonLoading = ref(false)
+const seasonOverview = ref({
+  rank: 0,
+  totalTeams: 0,
+  points: 0,
+  wins: 0,
+  draws: 0,
+  losses: 0,
+  recentMatches: []
+})
+const recentMatches = computed(() => seasonOverview.value.recentMatches || [])
 
 function startPreparation() {
   ElMessage.success('已进入青岛西海岸赛前准备流程')
@@ -134,6 +139,23 @@ function loadPendingSchedules() {
   }).finally(() => {
     pendingLoading.value = false
   })
+}
+
+function loadSeasonOverview() {
+  seasonLoading.value = true
+  getSeasonOverview().then(response => {
+    seasonOverview.value = { ...seasonOverview.value, ...(response.data || {}) }
+  }).finally(() => {
+    seasonLoading.value = false
+  })
+}
+
+function getResultLabel(result) {
+  return ({ W: '胜', D: '平', L: '负' })[result] || '-'
+}
+
+function getResultTone(result) {
+  return ({ W: 'win', D: 'draw', L: 'loss' })[result] || 'draw'
 }
 
 function getScheduleType(eventType) {
@@ -155,7 +177,16 @@ function viewAllSchedules() {
   router.push({ path: '/cm/event', query: { status: '0' } })
 }
 
-onActivated(loadPendingSchedules)
+function viewAllMatches() {
+  router.push({ path: '/cm/match', query: { status: '1' } })
+}
+
+function loadHomeData() {
+  loadSeasonOverview()
+  loadPendingSchedules()
+}
+
+onActivated(loadHomeData)
 
 function showMessage(target) {
   ElMessage.info(`${target}功能正在准备中`)
@@ -352,6 +383,13 @@ function showMessage(target) {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 14px;
+}
+
+.season-empty {
+  padding: 34px 0;
+  text-align: center;
+  color: #98a2b3;
+  font-size: 13px;
 }
 
 .form-item {

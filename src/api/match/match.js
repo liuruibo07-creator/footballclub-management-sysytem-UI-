@@ -9,6 +9,14 @@ export function listMatch(query) {
   })
 }
 
+// 查询首页赛季概览
+export function getSeasonOverview() {
+  return request({
+    url: '/match/match/season-overview',
+    method: 'get'
+  })
+}
+
 // 查询比赛管理详细
 export function getMatch(id) {
   return request({
