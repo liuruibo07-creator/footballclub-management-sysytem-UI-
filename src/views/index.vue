@@ -12,7 +12,7 @@
           <strong>天津津门虎</strong>
         </div>
         <div class="match-meta">
-          <span class="league-info">中超联赛 第25轮</span>
+          <strong>中超联赛 第25轮</strong>
           <b>VS</b>
           <span><el-icon><Clock /></el-icon>2026-08-29&nbsp; 19:00</span>
           <span><el-icon><OfficeBuilding /></el-icon>天津泰达足球场</span>
@@ -29,112 +29,164 @@
     </section>
 
     <div class="dashboard-grid">
-      <section class="panel season-panel" aria-labelledby="season-title">
+      <section class="panel season-panel" aria-labelledby="season-title" v-loading="seasonLoading">
         <header class="panel-header"><h2 id="season-title">赛季概览</h2></header>
         <div class="season-stats">
           <div class="stat-item">
             <span>联赛排名</span>
-            <strong>14<small>/16</small></strong>
+            <strong>{{ seasonOverview.rank || '--' }}<small>/{{ seasonOverview.totalTeams || '--' }}</small></strong>
           </div>
           <div class="stat-item">
             <span>积分</span>
-            <strong>18</strong>
+            <strong>{{ seasonOverview.points }}</strong>
           </div>
           <div class="stat-item record-stat">
             <span>战绩</span>
-            <strong><em>7</em>胜 <em>7</em>平 <em>9</em>负</strong>
+            <strong><em>{{ seasonOverview.wins }}</em>胜 <em>{{ seasonOverview.draws }}</em>平 <em>{{ seasonOverview.losses }}</em>负</strong>
           </div>
         </div>
         <div class="recent-block">
           <h3>近期状态</h3>
-          <div class="form-list">
-            <div v-for="match in recentMatches" :key="match.round" class="form-item">
-              <span class="result-chip" :class="match.tone">{{ match.result }}</span>
-              <strong>{{ match.score }}</strong>
-              <small>{{ match.round }}</small>
+          <div v-if="recentMatches.length > 0" class="form-list">
+            <div v-for="match in recentMatches" :key="`${match.roundNo}-${match.matchDate}`" class="form-item">
+              <span class="result-chip" :class="getResultTone(match.result)">{{ getResultLabel(match.result) }}</span>
+              <strong>{{ match.teamScore }}-{{ match.opponentScore }}</strong>
+              <small>第{{ match.roundNo }}轮</small>
             </div>
           </div>
+          <div v-else-if="!seasonLoading" class="season-empty">暂无已完成比赛</div>
         </div>
-        <button class="text-link season-link" type="button" @click="showMessage('赛季数据')">
+        <button class="text-link season-link" type="button" @click="viewAllMatches">
           查看全部 <el-icon><Right /></el-icon>
         </button>
       </section>
 
       <section class="panel todo-panel" aria-labelledby="todo-title">
         <header class="panel-header"><h2 id="todo-title">待处理事项</h2></header>
-        <div class="todo-section injury-section">
+        <div class="todo-section schedule-todo-section" v-loading="pendingLoading">
           <div class="todo-heading">
-            <h3>赛前动态</h3>
-            <span class="count-badge danger">3</span>
+            <h3>待办日程</h3>
+            <span v-if="pendingTotal > 0" class="count-badge danger">{{ pendingTotal }}</span>
           </div>
-          <ul>
-            <li v-for="item in matchUpdates" :key="item.title">
-              <el-icon class="status-icon"><WarningFilled /></el-icon>
+          <div v-if="!pendingLoading && pendingSchedules.length === 0" class="todo-empty">
+            暂无已安排的日程
+          </div>
+          <ul v-else>
+            <li v-for="item in pendingSchedules" :key="item.id" class="schedule-todo-item">
+              <el-icon class="status-icon"><Calendar /></el-icon>
               <div class="item-main">
                 <strong>{{ item.title }}</strong>
-                <span>{{ item.subtitle }}</span>
+                <span>{{ getScheduleType(item.eventType) }} · {{ item.location || '地点待定' }}</span>
               </div>
               <div class="item-side">
-                <span>{{ item.detail }}</span>
-                <small>{{ item.updatedAt }}</small>
+                <span>{{ formatScheduleTime(item.startTime) }}</span>
+                <small>已安排</small>
               </div>
             </li>
           </ul>
-        </div>
-        <div class="todo-section task-section">
-          <div class="todo-heading">
-            <h3>后续赛程</h3>
-            <span class="count-badge warning">2</span>
+          <div class="todo-summary-row">
+            <div v-if="pendingRemaining > 0" class="remaining-tip">
+              还有 <strong>{{ pendingRemaining }}</strong> 条待办日程
+            </div>
+            <button class="text-link todo-link" type="button" @click="viewAllSchedules">
+              查看全部 <el-icon><Right /></el-icon>
+            </button>
           </div>
-          <ul>
-            <li v-for="task in fixtures" :key="task.title" class="task-item">
-              <el-icon class="task-icon"><Tickets /></el-icon>
-              <div class="item-main">
-                <strong>{{ task.title }}</strong>
-                <span>{{ task.description }}</span>
-              </div>
-              <time :datetime="task.datetime">开球：{{ task.kickoff }}</time>
-            </li>
-          </ul>
         </div>
-        <button class="text-link todo-link" type="button" @click="showMessage('后续赛程')">
-          查看全部赛程 <el-icon><Right /></el-icon>
-        </button>
       </section>
     </div>
   </main>
 </template>
 
 <script setup>
-import { Clock, OfficeBuilding, Right, Tickets, WarningFilled } from '@element-plus/icons-vue'
+import { Calendar, Clock, OfficeBuilding, Right } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import { getPendingEventSummary } from '@/api/system/event'
+import { getSeasonOverview } from '@/api/match/match'
 import tianjinLogo from '@/assets/images/tianjin-jinmen-tiger.png'
 import qingdaoLogo from '@/assets/images/qingdao-west-coast.png'
 
 defineOptions({ name: 'Index' })
 
-const recentMatches = [
-  { result: '平', score: '0-0', round: '第24轮', tone: 'draw' },
-  { result: '负', score: '2-4', round: '第23轮', tone: 'loss' },
-  { result: '负', score: '1-2', round: '第22轮', tone: 'loss' },
-  { result: '胜', score: '3-2', round: '第21轮', tone: 'win' },
-  { result: '胜', score: '2-0', round: '第20轮', tone: 'win' }
-]
-
-const matchUpdates = [
-  { title: '近期走势', subtitle: '联赛第22–24轮', detail: '连续3场不胜', updatedAt: '更新：2026-08-22' },
-  { title: '主场回归', subtitle: '中超第25轮', detail: '重返泰达足球场', updatedAt: '比赛：2026-08-29' },
-  { title: '票务进展', subtitle: '80元档已售罄', detail: '120元档即将售罄', updatedAt: '截至：2026-08-26' }
-]
-
-const fixtures = [
-  { title: '第25轮 · 青岛西海岸', description: '主场 · 天津泰达足球场', kickoff: '08-29 19:00', datetime: '2026-08-29T19:00' },
-  { title: '第26轮 · 浙江俱乐部绿城', description: '主场 · 中超联赛', kickoff: '09-06 20:00', datetime: '2026-09-06T20:00' }
-]
+const router = useRouter()
+const pendingLoading = ref(false)
+const pendingSchedules = ref([])
+const pendingTotal = ref(0)
+const pendingRemaining = ref(0)
+const seasonLoading = ref(false)
+const seasonOverview = ref({
+  rank: 0,
+  totalTeams: 0,
+  points: 0,
+  wins: 0,
+  draws: 0,
+  losses: 0,
+  recentMatches: []
+})
+const recentMatches = computed(() => seasonOverview.value.recentMatches || [])
 
 function startPreparation() {
   ElMessage.success('已进入青岛西海岸赛前准备流程')
 }
+
+function loadPendingSchedules() {
+  pendingLoading.value = true
+  getPendingEventSummary().then(response => {
+    const summary = response.data || {}
+    pendingSchedules.value = summary.events || []
+    pendingTotal.value = Number(summary.total || 0)
+    pendingRemaining.value = Number(summary.remaining || 0)
+  }).finally(() => {
+    pendingLoading.value = false
+  })
+}
+
+function loadSeasonOverview() {
+  seasonLoading.value = true
+  getSeasonOverview().then(response => {
+    seasonOverview.value = { ...seasonOverview.value, ...(response.data || {}) }
+  }).finally(() => {
+    seasonLoading.value = false
+  })
+}
+
+function getResultLabel(result) {
+  return ({ W: '胜', D: '平', L: '负' })[result] || '-'
+}
+
+function getResultTone(result) {
+  return ({ W: 'win', D: 'draw', L: 'loss' })[result] || 'draw'
+}
+
+function getScheduleType(eventType) {
+  return ({ '0': '比赛', '1': '训练', '2': '会议' })[eventType] || '日程'
+}
+
+function formatScheduleTime(dateTime) {
+  if (!dateTime) return '时间待定'
+  const date = new Date(dateTime.replace(' ', 'T'))
+  if (Number.isNaN(date.getTime())) return '时间待定'
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const hour = String(date.getHours()).padStart(2, '0')
+  const minute = String(date.getMinutes()).padStart(2, '0')
+  return `${month}-${day} ${hour}:${minute}`
+}
+
+function viewAllSchedules() {
+  router.push({ path: '/cm/event', query: { status: '0' } })
+}
+
+function viewAllMatches() {
+  router.push({ path: '/cm/match', query: { status: '1' } })
+}
+
+function loadHomeData() {
+  loadSeasonOverview()
+  loadPendingSchedules()
+}
+
+onActivated(loadHomeData)
 
 function showMessage(target) {
   ElMessage.info(`${target}功能正在准备中`)
@@ -154,8 +206,7 @@ function showMessage(target) {
 
 .match-hero {
   position: relative;
-  min-height: 190px;
-  aspect-ratio: 3.35 / 1;
+  height: clamp(240px, 22vw, 330px);
   overflow: hidden;
   border-radius: 7px;
   background: #06295f url('@/assets/images/home-stadium.png') center 48% / cover no-repeat;
@@ -178,11 +229,6 @@ function showMessage(target) {
   padding: 27px 35px 0;
   font-size: 18px;
   font-weight: 700;
-
-  strong {
-    grid-column: 2;
-    font-size: 19px;
-  }
 }
 
 .match-stage {
@@ -223,13 +269,10 @@ function showMessage(target) {
   gap: 9px;
   color: rgba(255, 255, 255, 0.9);
 
-  .league-info {
-    font-size: 16px;
-    font-weight: 700;
+  > strong {
     color: #fff;
-    letter-spacing: 1px;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    margin-bottom: 4px;
+    font-size: 19px;
+    white-space: nowrap;
   }
 
   b {
@@ -342,6 +385,13 @@ function showMessage(target) {
   gap: 14px;
 }
 
+.season-empty {
+  padding: 34px 0;
+  text-align: center;
+  color: #98a2b3;
+  font-size: 13px;
+}
+
 .form-item {
   display: flex;
   flex-direction: column;
@@ -413,6 +463,17 @@ function showMessage(target) {
 
 .todo-section ul { margin: 0; padding: 0; list-style: none; }
 
+.schedule-todo-section { min-height: 190px; }
+
+.todo-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 150px;
+  color: #98a2b3;
+  font-size: 13px;
+}
+
 .todo-section li {
   display: grid;
   grid-template-columns: 24px minmax(130px, 0.85fr) minmax(180px, 1.15fr);
@@ -434,11 +495,24 @@ function showMessage(target) {
 }
 
 .item-side small { color: #ef5061; font-size: 12px; }
-.task-section { margin-top: 2px; }
-.todo-section li.task-item { grid-template-columns: 27px minmax(0, 1fr) 135px; min-height: 40px; }
-.task-icon { color: #ff8619; font-size: 21px; }
-.task-item time { color: #ff7910; font-size: 10px; white-space: nowrap; }
-.todo-link { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); }
+
+.remaining-tip {
+  color: #7a8698;
+  font-size: 12px;
+
+  strong { color: #1764c1; }
+}
+
+.todo-summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 24px;
+  min-height: 42px;
+  padding: 6px 4px 0;
+}
+
+.todo-link { flex: none; }
 
 @media (max-width: 900px) {
   .prepare-button { right: 28px; bottom: 26px; }
@@ -450,14 +524,12 @@ function showMessage(target) {
 
 @media (max-width: 480px) {
   .match-home { padding: 10px; }
-  .match-hero { min-height: 410px; aspect-ratio: auto; }
+  .match-hero { height: 410px; }
   .hero-heading {
     grid-template-columns: 1fr;
     gap: 7px;
     padding: 20px;
     text-align: center;
-
-    strong { grid-column: auto; grid-row: 1; }
   }
   .match-stage { grid-template-columns: 1fr 105px 1fr; width: calc(100% - 24px); margin-top: 26px; }
   .team img { width: 68px; height: 68px; }
@@ -479,12 +551,12 @@ function showMessage(target) {
   .record-stat strong em { font-size: 16px; }
   .form-list { gap: 4px; }
   .todo-section li,
-  .todo-section li.task-item {
+  .todo-section li.schedule-todo-item {
     grid-template-columns: 24px 1fr;
     gap: 0 4px;
     padding: 10px 0;
   }
   .item-side,
-  .task-item time { grid-column: 2; margin-top: 7px; }
+  .schedule-todo-item time { grid-column: 2; margin-top: 7px; }
 }
 </style>

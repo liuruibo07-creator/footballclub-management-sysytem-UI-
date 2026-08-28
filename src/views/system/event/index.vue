@@ -150,6 +150,7 @@ import { listEvent, getEvent, delEvent, addEvent, updateEvent } from "@/api/syst
 import { listPp } from "@/api/pp/pp";
 
 const { proxy } = getCurrentInstance();
+const route = useRoute();
 const { football_event_type, football_schedule_status } = proxy.useDict('football_event_type', 'football_schedule_status');
 
 const eventList = ref([]);
@@ -177,7 +178,7 @@ const data = reactive({
     eventType: null,
     startTime: null,
     endTime: null,
-    status: null,
+    status: route.query.status === '0' ? '0' : null,
   },
   rules: {
     eventType: [
@@ -274,6 +275,16 @@ function handleQuery() {
   queryParams.value.pageNum = 1;
   getList();
 }
+
+/** 从首页“查看全部”进入或返回已缓存页面时，同步已安排筛选条件 */
+watch(() => route.query.status, status => {
+  const normalizedStatus = status === '0' ? '0' : null;
+  if (queryParams.value.status !== normalizedStatus) {
+    queryParams.value.status = normalizedStatus;
+    queryParams.value.pageNum = 1;
+    getList();
+  }
+});
 
 /** 新增按钮操作 */
 function handleAdd() {
