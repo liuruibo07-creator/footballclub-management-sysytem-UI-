@@ -93,6 +93,45 @@
             </button>
           </div>
         </div>
+
+        <div class="team-overview-grid" aria-label="今日训练与球队状态">
+          <article class="overview-card training-card">
+            <div class="overview-card-header">
+              <div>
+                <span class="overview-kicker">TODAY</span>
+                <h3>今日训练</h3>
+              </div>
+              <span class="sample-badge">前端示例</span>
+            </div>
+            <strong class="training-subject">战术配合与定位球训练</strong>
+            <div class="training-meta">
+              <span><el-icon><Clock /></el-icon>15:30—17:30</span>
+              <span><el-icon><OfficeBuilding /></el-icon>天津泰达足球场</span>
+            </div>
+            <button class="card-link" type="button" @click="viewTraining">
+              查看训练计划 <el-icon><Right /></el-icon>
+            </button>
+          </article>
+
+          <article class="overview-card health-card">
+            <div class="overview-card-header">
+              <div>
+                <span class="overview-kicker">TEAM</span>
+                <h3>球队状态</h3>
+              </div>
+              <span class="sample-badge">前端示例</span>
+            </div>
+            <div class="health-stats">
+              <div v-for="item in teamHealthStats" :key="item.label" class="health-stat" :class="item.tone">
+                <strong>{{ item.value }}</strong>
+                <span>{{ item.label }}</span>
+              </div>
+            </div>
+            <button class="card-link" type="button" @click="viewInjuries">
+              查看伤病情况 <el-icon><Right /></el-icon>
+            </button>
+          </article>
+        </div>
       </section>
     </div>
   </main>
@@ -124,6 +163,12 @@ const seasonOverview = ref({
   recentMatches: []
 })
 const recentMatches = computed(() => seasonOverview.value.recentMatches || [])
+const teamHealthStats = [
+  { label: '正常训练', value: 24, tone: 'normal' },
+  { label: '伤病', value: 3, tone: 'injured' },
+  { label: '康复中', value: 2, tone: 'recovering' },
+  { label: '缺席', value: 1, tone: 'absent' }
+]
 
 function startPreparation() {
   ElMessage.success('已进入青岛西海岸赛前准备流程')
@@ -174,11 +219,19 @@ function formatScheduleTime(dateTime) {
 }
 
 function viewAllSchedules() {
-  router.push({ path: '/cm/event', query: { status: '0' } })
+  router.push({ path: '/cm/competition/event', query: { status: '0' } })
 }
 
 function viewAllMatches() {
-  router.push({ path: '/cm/match', query: { status: '1' } })
+  router.push({ path: '/cm/competition/match', query: { status: '1' } })
+}
+
+function viewTraining() {
+  router.push('/cm/competition/trainingmanagement')
+}
+
+function viewInjuries() {
+  router.push('/cm/team/injury')
 }
 
 function loadHomeData() {
@@ -517,8 +570,123 @@ function showMessage(target) {
 
 .todo-link { flex: none; }
 
+.team-overview-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e8edf3;
+}
+
+.overview-card {
+  position: relative;
+  min-height: 132px;
+  padding: 13px 14px 34px;
+  overflow: hidden;
+  border: 1px solid #e6ecf4;
+  border-radius: 7px;
+  background: linear-gradient(135deg, #f8fbff 0%, #f3f7fd 100%);
+}
+
+.overview-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+
+  h3 {
+    margin: 2px 0 0;
+    color: #263a55;
+    font-size: 14px;
+  }
+}
+
+.overview-kicker {
+  color: #4d84c7;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+}
+
+.sample-badge {
+  padding: 3px 7px;
+  border-radius: 10px;
+  background: #e8f2ff;
+  color: #3d78bb;
+  font-size: 9px;
+  white-space: nowrap;
+}
+
+.training-subject {
+  display: block;
+  margin: 11px 0 7px;
+  color: #17365d;
+  font-size: 13px;
+}
+
+.training-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 14px;
+  color: #6e7f95;
+  font-size: 11px;
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+}
+
+.health-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-top: 11px;
+}
+
+.health-stat {
+  display: flex;
+  min-width: 0;
+  padding: 7px 3px;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  border-radius: 5px;
+  background: #edf3fa;
+
+  strong { color: #315b8c; font-size: 16px; line-height: 1; }
+  span { color: #728096; font-size: 9px; white-space: nowrap; }
+  &.normal { background: #e7f7ef; }
+  &.normal strong { color: #16a062; }
+  &.injured { background: #ffebed; }
+  &.injured strong { color: #e94c5c; }
+  &.recovering { background: #fff4df; }
+  &.recovering strong { color: #e59117; }
+}
+
+.card-link {
+  position: absolute;
+  right: 11px;
+  bottom: 9px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #1764c1;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+
+  &:hover { color: #0b7be8; }
+}
+
 @media (max-width: 900px) {
   .prepare-button { right: 28px; bottom: 26px; }
+  .team-overview-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 620px) {
@@ -561,5 +729,6 @@ function showMessage(target) {
   }
   .item-side,
   .schedule-todo-item time { grid-column: 2; margin-top: 7px; }
+  .health-stats { grid-template-columns: repeat(2, 1fr); }
 }
 </style>
