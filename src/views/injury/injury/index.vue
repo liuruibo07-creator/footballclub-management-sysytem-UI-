@@ -1,31 +1,29 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
+    <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="80px">
       <el-form-item label="球员" prop="playerId">
-        <el-select v-model="queryParams.playerId" placeholder="请选择球员" clearable>
+        <el-select v-model="queryParams.playerId" placeholder="请选择球员" clearable filterable>
           <el-option
-            v-for="item in playerOptions"
+            v-for="item in playerList"
             :key="item.id"
             :label="item.name"
             :value="item.id"
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="受伤日期" style="width: 308px">
-        <el-date-picker
-          v-model="daterangeInjuryDate"
-          value-format="YYYY-MM-DD"
-          type="daterange"
-          range-separator="-"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-        ></el-date-picker>
+      <el-form-item label="伤病类型" prop="injuryType">
+        <el-input
+          v-model="queryParams.injuryType"
+          placeholder="请输入伤病类型"
+          clearable
+          @keyup.enter="handleQuery"
+        />
       </el-form-item>
       <el-form-item label="康复状态" prop="recoveryStatus">
         <el-select v-model="queryParams.recoveryStatus" placeholder="请选择康复状态" clearable>
-          <el-option label="未知" :value="0" />
-          <el-option label="治疗中" :value="1" />
-          <el-option label="康复中" :value="2" />
+          <el-option label="未开始" :value="0" />
+          <el-option label="康复中" :value="1" />
+          <el-option label="已复出" :value="2" />
           <el-option label="已康复" :value="3" />
         </el-select>
       </el-form-item>
@@ -79,52 +77,38 @@
 
     <el-table v-loading="loading" :data="injuryList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="序号" align="center" width="80">
-        <template #default="scope">
-          {{ (queryParams.pageNum - 1) * queryParams.pageSize + scope.$index + 1 }}
-        </template>
-      </el-table-column>
-      <el-table-column label="球员" align="center" prop="playerName">
-        <template #default="scope">
-          <span>{{ scope.row.playerName || scope.row.playerId }}</span>
-        </template>
-      </el-table-column>
+      <el-table-column label="序号" align="center" prop="id" width="60" />
+      <el-table-column label="球员" align="center" prop="playerName" width="100" />
       <el-table-column label="伤病类型" align="center" prop="injuryType" />
       <el-table-column label="受伤位置" align="center" prop="injuryLocation" />
-      <el-table-column label="受伤日期" align="center" prop="injuryDate" width="180">
+      <el-table-column label="受伤日期" align="center" prop="injuryDate" width="120">
         <template #default="scope">
           <span>{{ parseTime(scope.row.injuryDate, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="预期复出日期" align="center" prop="expectedReturnDate" width="180">
+      <el-table-column label="预期复出" align="center" prop="expectedReturnDate" width="120">
         <template #default="scope">
           <span>{{ parseTime(scope.row.expectedReturnDate, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="实际返回日期" align="center" prop="actualReturnDate" width="180">
+      <el-table-column label="实际返回" align="center" prop="actualReturnDate" width="120">
         <template #default="scope">
-          <span>{{ parseTime(scope.row.actualReturnDate, '{y}-{m}-{d}') }}</span>
+          <span>{{ scope.row.actualReturnDate ? parseTime(scope.row.actualReturnDate, '{y}-{m}-{d}') : '-' }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="康复状态" align="center" prop="recoveryStatus">
+      <el-table-column label="康复状态" align="center" prop="recoveryStatus" width="100">
         <template #default="scope">
-          <el-tag v-if="scope.row.recoveryStatus === 0" type="info">未知</el-tag>
-          <el-tag v-else-if="scope.row.recoveryStatus === 1" type="danger">治疗中</el-tag>
-          <el-tag v-else-if="scope.row.recoveryStatus === 2" type="warning">康复中</el-tag>
-          <el-tag v-else-if="scope.row.recoveryStatus === 3" type="success">已康复</el-tag>
-          <span v-else>{{ scope.row.recoveryStatus }}</span>
+          <el-tag :type="getStatusTagType(scope.row.recoveryStatus)">{{ getStatusText(scope.row.recoveryStatus) }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+      <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width">
         <template #default="scope">
-          <div class="action-buttons">
-            <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['injury:injury:edit']">修改</el-button>
-            <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['injury:injury:remove']">删除</el-button>
-          </div>
+          <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['injury:injury:edit']">修改</el-button>
+          <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['injury:injury:remove']">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
-    
+
     <pagination
       v-show="total>0"
       :total="total"
@@ -134,16 +118,16 @@
     />
 
     <!-- 添加或修改伤病康复对话框 -->
-    <el-dialog :title="title" v-model="open" width="500px" append-to-body>
-      <el-form ref="injuryRef" :model="form" :rules="rules" label-width="80px">
+    <el-dialog :title="title" v-model="open" width="600px" append-to-body>
+      <el-form ref="injuryRef" :model="form" :rules="rules" label-width="100px">
         <el-form-item label="球员" prop="playerId">
-          <el-select v-model="form.playerId" placeholder="请选择球员">
+          <el-select v-model="form.playerId" placeholder="请选择球员" filterable style="width: 100%">
             <el-option
-              v-for="item in playerOptions"
+              v-for="item in playerList"
               :key="item.id"
               :label="item.name"
               :value="item.id"
-            ></el-option>
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="伤病类型" prop="injuryType">
@@ -157,7 +141,8 @@
             v-model="form.injuryDate"
             type="date"
             value-format="YYYY-MM-DD"
-            placeholder="请选择受伤日期">
+            placeholder="请选择受伤日期"
+            style="width: 100%">
           </el-date-picker>
         </el-form-item>
         <el-form-item label="预期复出日期" prop="expectedReturnDate">
@@ -165,22 +150,32 @@
             v-model="form.expectedReturnDate"
             type="date"
             value-format="YYYY-MM-DD"
-            placeholder="请选择预期复出日期">
+            placeholder="请选择预期复出日期"
+            style="width: 100%">
+          </el-date-picker>
+        </el-form-item>
+        <el-form-item label="实际返回日期" prop="actualReturnDate">
+          <el-date-picker clearable
+            v-model="form.actualReturnDate"
+            type="date"
+            value-format="YYYY-MM-DD"
+            placeholder="请选择实际返回日期"
+            style="width: 100%">
           </el-date-picker>
         </el-form-item>
         <el-form-item label="康复状态" prop="recoveryStatus">
-          <el-select v-model="form.recoveryStatus" placeholder="请选择康复状态">
-            <el-option label="未知" :value="0" />
-            <el-option label="治疗中" :value="1" />
-            <el-option label="康复中" :value="2" />
-            <el-option label="已康复" :value="3" />
-          </el-select>
+          <el-radio-group v-model="form.recoveryStatus">
+            <el-radio :label="0">未开始</el-radio>
+            <el-radio :label="1">康复中</el-radio>
+            <el-radio :label="2">已复出</el-radio>
+            <el-radio :label="3">已康复</el-radio>
+          </el-radio-group>
         </el-form-item>
         <el-form-item label="康复计划" prop="rehabPlan">
-          <el-input v-model="form.rehabPlan" type="textarea" placeholder="请输入内容" />
+          <el-input v-model="form.rehabPlan" type="textarea" :rows="3" placeholder="请输入康复计划" />
         </el-form-item>
         <el-form-item label="备注" prop="remark">
-          <el-input v-model="form.remark" type="textarea" placeholder="请输入内容" />
+          <el-input v-model="form.remark" type="textarea" :rows="2" placeholder="请输入备注" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -194,11 +189,12 @@
 </template>
 
 <script setup name="Injury">
-import { listInjury, getInjury, delInjury, addInjury, updateInjury, getPlayerOptions as fetchPlayerOptions } from "@/api/injury/injury";
+import { listInjury, getInjury, delInjury, addInjury, updateInjury, playerOptions } from "@/api/injury/injury";
 
 const { proxy } = getCurrentInstance();
 
 const injuryList = ref([]);
+const playerList = ref([]);
 const open = ref(false);
 const loading = ref(true);
 const showSearch = ref(true);
@@ -207,8 +203,6 @@ const single = ref(true);
 const multiple = ref(true);
 const total = ref(0);
 const title = ref("");
-const daterangeInjuryDate = ref([]);
-const playerOptions = ref([]);
 
 const data = reactive({
   form: {},
@@ -217,7 +211,6 @@ const data = reactive({
     pageSize: 10,
     playerId: null,
     injuryType: null,
-    injuryDate: null,
     recoveryStatus: null,
   },
   rules: {
@@ -225,7 +218,10 @@ const data = reactive({
       { required: true, message: "球员不能为空", trigger: "change" }
     ],
     injuryType: [
-      { required: true, message: "伤病类型不能为空", trigger: "change" }
+      { required: true, message: "伤病类型不能为空", trigger: "blur" }
+    ],
+    injuryLocation: [
+      { required: true, message: "受伤位置不能为空", trigger: "blur" }
     ],
     injuryDate: [
       { required: true, message: "受伤日期不能为空", trigger: "blur" }
@@ -238,26 +234,33 @@ const data = reactive({
 
 const { queryParams, form, rules } = toRefs(data);
 
-/** 查询球员下拉数据 */
-function getPlayerOptions() {
-  fetchPlayerOptions().then(response => {
-    playerOptions.value = response.data;
-  });
-}
-
 /** 查询伤病康复列表 */
 function getList() {
   loading.value = true;
-  queryParams.value.params = {};
-  if (null != daterangeInjuryDate && '' != daterangeInjuryDate) {
-    queryParams.value.params["beginInjuryDate"] = daterangeInjuryDate.value[0];
-    queryParams.value.params["endInjuryDate"] = daterangeInjuryDate.value[1];
-  }
   listInjury(queryParams.value).then(response => {
     injuryList.value = response.rows;
     total.value = response.total;
     loading.value = false;
   });
+}
+
+/** 获取球员下拉列表 */
+function getPlayerOptions() {
+  playerOptions().then(response => {
+    playerList.value = response.data;
+  });
+}
+
+/** 康复状态文本 */
+function getStatusText(status) {
+  const map = { 0: '未开始', 1: '康复中', 2: '已复出', 3: '已康复' };
+  return map[status] || '未知';
+}
+
+/** 康复状态标签颜色 */
+function getStatusTagType(status) {
+  const map = { 0: 'info', 1: 'warning', 2: '', 3: 'success' };
+  return map[status] || 'info';
 }
 
 // 取消按钮
@@ -296,7 +299,6 @@ function handleQuery() {
 
 /** 重置按钮操作 */
 function resetQuery() {
-  daterangeInjuryDate.value = [];
   proxy.resetForm("queryRef");
   handleQuery();
 }
@@ -312,21 +314,17 @@ function handleSelectionChange(selection) {
 function handleAdd() {
   reset();
   open.value = true;
-  title.value = "添加伤病康复";
+  title.value = "添加伤病康复记录";
 }
 
 /** 修改按钮操作 */
 function handleUpdate(row) {
   reset();
-  const _id = row?.id ?? ids.value[0];
-  if (_id == null) {
-    proxy.$modal.msgError("该记录缺少主键 ID，请先修复数据库中的伤病记录");
-    return;
-  }
+  const _id = row.id || ids.value
   getInjury(_id).then(response => {
     form.value = response.data;
     open.value = true;
-    title.value = "修改伤病康复";
+    title.value = "修改伤病康复记录";
   });
 }
 
@@ -369,15 +367,6 @@ function handleExport() {
   }, `injury_${new Date().getTime()}.xlsx`)
 }
 
-getList();
 getPlayerOptions();
+getList();
 </script>
-
-<style scoped>
-.action-buttons {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-</style>

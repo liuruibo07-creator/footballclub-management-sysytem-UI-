@@ -44,9 +44,17 @@ export function delInjury(id) {
 }
 
 // 获取球员下拉列表
-export function getPlayerOptions() {
+export function playerOptions() {
   return request({
     url: '/injury/injury/playerOptions',
+    method: 'get'
+  })
+}
+
+// 获取伤病统计数据
+export function injuryStats() {
+  return request({
+    url: '/injury/injury/stats',
     method: 'get'
   })
 }

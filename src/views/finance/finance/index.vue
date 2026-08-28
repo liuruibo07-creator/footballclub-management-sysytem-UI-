@@ -4,7 +4,7 @@
       <el-form-item label="收支类型" prop="recordType">
         <el-select v-model="queryParams.recordType" placeholder="请选择收支类型" clearable>
           <el-option
-            v-for="dict in record_type"
+            v-for="dict in income_expense_type"
             :key="dict.value"
             :label="dict.label"
             :value="dict.value"
@@ -14,10 +14,10 @@
       <el-form-item label="明细分类" prop="category">
         <el-select v-model="queryParams.category" placeholder="请选择明细分类" clearable>
           <el-option
-            v-for="dict in various"
+            v-for="dict in detail_category"
             :key="dict.value"
             :label="dict.label"
-            :value="dict.value"
+            :value="dict.label"
           />
         </el-select>
       </el-form-item>
@@ -128,12 +128,12 @@
       <el-table-column label="主键ID" align="center" prop="id" />
       <el-table-column label="收支类型" align="center" prop="recordType">
         <template #default="scope">
-          <dict-tag :options="record_type" :value="scope.row.recordType"/>
+          <dict-tag :options="income_expense_type" :value="scope.row.recordType"/>
         </template>
       </el-table-column>
       <el-table-column label="明细分类" align="center" prop="category">
         <template #default="scope">
-          <dict-tag :options="various" :value="scope.row.category"/>
+          <span>{{ scope.row.category }}</span>
         </template>
       </el-table-column>
       <el-table-column label="金额" align="center" prop="amount" />
@@ -175,7 +175,7 @@
         <el-form-item label="收支类型" prop="recordType">
           <el-select v-model="form.recordType" placeholder="请选择收支类型">
             <el-option
-              v-for="dict in record_type"
+              v-for="dict in income_expense_type"
               :key="dict.value"
               :label="dict.label"
               :value="dict.value"
@@ -185,10 +185,10 @@
         <el-form-item label="明细分类" prop="category">
           <el-select v-model="form.category" placeholder="请选择明细分类">
             <el-option
-              v-for="dict in various"
+              v-for="dict in detail_category"
               :key="dict.value"
               :label="dict.label"
-              :value="dict.value"
+              :value="dict.label"
             ></el-option>
           </el-select>
         </el-form-item>
@@ -224,7 +224,7 @@
 import { listFinance, getFinance, delFinance, addFinance, updateFinance, getFinanceSummary } from "@/api/finance/finance";
 
 const { proxy } = getCurrentInstance();
-const { various, record_type } = proxy.useDict('various', 'record_type');
+const { detail_category, income_expense_type } = proxy.useDict('detail_category', 'income_expense_type');
 
 const financeList = ref([]);
 const open = ref(false);
