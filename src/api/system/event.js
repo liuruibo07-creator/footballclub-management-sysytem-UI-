@@ -9,6 +9,14 @@ export function listEvent(query) {
   })
 }
 
+// 查询首页待办日程汇总
+export function getPendingEventSummary() {
+  return request({
+    url: '/system/event/pending',
+    method: 'get'
+  })
+}
+
 // 查询球队日程详细
 export function getEvent(id) {
   return request({
