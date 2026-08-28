@@ -12,6 +12,7 @@
           :label="dict.label"
           :value="dict.value"
         />
+        <el-option label="其他" value="其他" />
       </el-select>
       <el-select v-model="queryParams.status" placeholder="全部状态" clearable class="filter-select" @change="handleStatusChange">
         <el-option
@@ -126,6 +127,7 @@
               :label="dict.label"
               :value="dict.value"
             ></el-option>
+            <el-option label="其他" value="其他" />
           </el-select>
         </el-form-item>
       </el-form>
