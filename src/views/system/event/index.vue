@@ -124,6 +124,16 @@
             />
           </el-select>
         </el-form-item>
+        <el-form-item label="参与人员">
+          <el-select v-model="selectedPlayerIds" multiple placeholder="请选择参与人员" style="width:100%">
+            <el-option
+              v-for="player in playerList"
+              :key="player.id"
+              :label="player.nameCn + '（' + getPositionLabel(player.position) + '）'"
+              :value="player.id"
+            />
+          </el-select>
+        </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
@@ -137,6 +147,7 @@
 
 <script setup name="Event">
 import { listEvent, getEvent, delEvent, addEvent, updateEvent } from "@/api/system/event";
+import { listPp } from "@/api/pp/pp";
 
 const { proxy } = getCurrentInstance();
 const { football_event_type, football_schedule_status } = proxy.useDict('football_event_type', 'football_schedule_status');
@@ -147,6 +158,15 @@ const loading = ref(true);
 const total = ref(0);
 const dialogTitle = ref("");
 const activeTab = ref("all");
+const playerList = ref([]);
+const selectedPlayerIds = ref([]);
+
+/** 获取球员列表 */
+function getPlayerList() {
+  listPp({ pageSize: 100, status: '活跃' }).then(response => {
+    playerList.value = response.rows || [];
+  });
+}
 
 const data = reactive({
   form: {},
@@ -242,9 +262,11 @@ function reset() {
     endTime: null,
     location: null,
     description: null,
-    status: null
+    status: null,
+    footballSchedulePlayerList: []
   };
   proxy.resetForm("eventRef");
+  selectedPlayerIds.value = [];
 }
 
 /** 搜索按钮操作 */
@@ -256,6 +278,7 @@ function handleQuery() {
 /** 新增按钮操作 */
 function handleAdd() {
   reset();
+  getPlayerList();
   open.value = true;
   dialogTitle.value = "新增日程";
 }
@@ -263,9 +286,14 @@ function handleAdd() {
 /** 修改按钮操作 */
 function handleUpdate(row) {
   reset();
+  getPlayerList();
   const _id = row.id;
   getEvent(_id).then(response => {
     form.value = response.data;
+    // 从返回的参与人列表中提取playerId
+    if (response.data.footballSchedulePlayerList) {
+      selectedPlayerIds.value = response.data.footballSchedulePlayerList.map(p => p.playerId);
+    }
     open.value = true;
     dialogTitle.value = "修改日程";
   });
@@ -275,6 +303,10 @@ function handleUpdate(row) {
 function submitForm() {
   proxy.$refs["eventRef"].validate(valid => {
     if (valid) {
+      // 将选中的球员ID转为后端需要的格式
+      form.value.footballSchedulePlayerList = selectedPlayerIds.value.map(playerId => ({
+        playerId: playerId
+      }));
       if (form.value.id != null) {
         updateEvent(form.value).then(response => {
           proxy.$modal.msgSuccess("修改成功");
@@ -350,6 +382,12 @@ function getStatusLabel(value) {
 function getStatusClass(value) {
   const map = { '0': 'status-scheduled', '1': 'status-completed', '2': 'status-cancelled', '3': 'status-postponed' };
   return map[value] || 'status-scheduled';
+}
+
+/** 获取位置标签文字（数字编码→中文） */
+function getPositionLabel(value) {
+  const map = { '0': '守门员', '1': '后卫', '2': '中场', '3': '前锋' };
+  return map[value] || value;
 }
 
 getList();
