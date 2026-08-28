@@ -43,7 +43,10 @@
     <!-- 比赛卡片列表 -->
     <div v-loading="loading" class="match-cards">
       <div v-for="match in matchList" :key="match.id" class="match-card">
-        <div class="round-badge">第{{ match.roundNo }}轮</div>
+        <div class="left-info">
+          <div class="round-badge">第{{ match.roundNo }}轮</div>
+          <div class="competition-name" v-if="match.competitionName">{{ match.competitionName }}</div>
+        </div>
         <div class="teams-row">
           <span class="team home">{{ match.homeTeam }}</span>
           <span :class="match.status === 1 && match.homeScore != null && match.awayScore != null ? 'center-sep sep-score' : 'center-sep sep-vs'">
@@ -359,23 +362,36 @@ getList();
     background: #fff;
     border: 1px solid #e4e7ed;
     border-radius: 6px;
-    padding: 14px 16px;
-    margin-bottom: 12px;
+    padding: 18px 16px;
+    margin-bottom: 16px;
     transition: box-shadow 0.2s;
 
     &:hover {
       box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
     }
 
-    .round-badge {
-      align-self: flex-start;
-      background: #f4f4f5;
-      color: #909399;
-      padding: 4px 10px;
-      border-radius: 4px;
-      text-align: center;
-      font-size: 13px;
-      white-space: nowrap;
+    .left-info {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      margin-right: 12px;
+
+      .round-badge {
+        background: #f4f4f5;
+        color: #909399;
+        padding: 4px 10px;
+        border-radius: 4px;
+        text-align: center;
+        font-size: 13px;
+        white-space: nowrap;
+      }
+
+      .competition-name {
+        font-size: 13px;
+        color: #909399;
+        white-space: nowrap;
+      }
     }
 
     .teams-row {
