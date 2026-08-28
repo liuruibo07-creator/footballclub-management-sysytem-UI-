@@ -107,21 +107,18 @@
         <el-card shadow="never" class="summary-card">
           <div class="summary-title">赛季总收入</div>
           <div class="summary-value summary-income">{{ formatCurrency(summary.totalIncome) }}</div>
-          <div class="summary-note">仅球队工作人员可见</div>
         </el-card>
       </el-col>
       <el-col :xs="24" :sm="8">
         <el-card shadow="never" class="summary-card">
           <div class="summary-title">赛季总支出</div>
           <div class="summary-value summary-expense">{{ formatCurrency(summary.totalExpense) }}</div>
-          <div class="summary-note">仅球队工作人员可见</div>
         </el-card>
       </el-col>
       <el-col :xs="24" :sm="8">
         <el-card shadow="never" class="summary-card">
           <div class="summary-title">赛季净收支</div>
           <div class="summary-value summary-balance">{{ formatCurrency(summary.netBalance) }}</div>
-          <div class="summary-note">仅球队工作人员可见</div>
         </el-card>
       </el-col>
     </el-row>
