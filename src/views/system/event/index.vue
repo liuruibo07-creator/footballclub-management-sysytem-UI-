@@ -45,6 +45,8 @@
         v-for="item in eventList"
         :key="item.id"
         class="schedule-item"
+        :class="{ 'clickable': item.eventType == 1 && item.trainingId }"
+        @click="handleTrainingClick(item)"
       >
         <div class="schedule-date">
           <div class="date-main">{{ formatDateShort(item.startTime) }}</div>
@@ -73,6 +75,38 @@
       v-model:limit="queryParams.pageSize"
       @pagination="getList"
     />
+
+    <!-- 训练详情对话框 -->
+    <el-dialog title="训练详情" v-model="trainingDetailOpen" width="600px" append-to-body>
+      <el-descriptions :column="2" border v-if="trainingDetail">
+        <el-descriptions-item label="训练标题" :span="2">{{ trainingDetail.title }}</el-descriptions-item>
+        <el-descriptions-item label="训练类型">{{ getTrainingTypeLabel(trainingDetail.trainingType) }}</el-descriptions-item>
+        <el-descriptions-item label="状态">{{ getTrainingStatusLabel(trainingDetail.status) }}</el-descriptions-item>
+        <el-descriptions-item label="开始时间">{{ trainingDetail.startTime }}</el-descriptions-item>
+        <el-descriptions-item label="结束时间">{{ trainingDetail.endTime }}</el-descriptions-item>
+        <el-descriptions-item label="训练场地" :span="2">{{ trainingDetail.venue || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="训练目标" :span="2">{{ trainingDetail.trainingGoal || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="训练描述" :span="2">{{ trainingDetail.description || '-' }}</el-descriptions-item>
+      </el-descriptions>
+      <!-- 参与球员 -->
+      <div v-if="trainingDetail && trainingDetail.footballTrainingPlayerList && trainingDetail.footballTrainingPlayerList.length > 0" style="margin-top: 16px;">
+        <div style="font-weight: 600; margin-bottom: 8px;">参与球员</div>
+        <el-table :data="trainingDetail.footballTrainingPlayerList" size="small" border>
+          <el-table-column prop="playerName" label="姓名" />
+          <el-table-column prop="position" label="位置">
+            <template #default="scope">{{ getPositionLabel(scope.row.position) }}</template>
+          </el-table-column>
+          <el-table-column prop="attendanceStatus" label="出勤状态">
+            <template #default="scope">{{ getAttendanceLabel(scope.row.attendanceStatus) }}</template>
+          </el-table-column>
+        </el-table>
+      </div>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="trainingDetailOpen = false">关 闭</el-button>
+        </div>
+      </template>
+    </el-dialog>
 
     <!-- 添加或修改日程对话框 -->
     <el-dialog :title="dialogTitle" v-model="open" width="560px" append-to-body>
@@ -147,6 +181,7 @@
 
 <script setup name="Event">
 import { listEvent, getEvent, delEvent, addEvent, updateEvent } from "@/api/system/event";
+import { getTraining, updateTraining } from "@/api/system/training";
 import { listPp } from "@/api/pp/pp";
 
 const { proxy } = getCurrentInstance();
@@ -161,6 +196,8 @@ const dialogTitle = ref("");
 const activeTab = ref("all");
 const playerList = ref([]);
 const selectedPlayerIds = ref([]);
+const trainingDetailOpen = ref(false);
+const trainingDetail = ref(null);
 
 /** 获取球员列表 */
 function getPlayerList() {
@@ -305,6 +342,14 @@ function handleUpdate(row) {
     if (response.data.footballSchedulePlayerList) {
       selectedPlayerIds.value = response.data.footballSchedulePlayerList.map(p => p.playerId);
     }
+    // 如果是训练事件且有trainingId，从训练记录中获取参与人员
+    if (response.data.eventType == 1 && response.data.trainingId) {
+      getTraining(response.data.trainingId).then(trainingRes => {
+        if (trainingRes.data && trainingRes.data.footballTrainingPlayerList) {
+          selectedPlayerIds.value = trainingRes.data.footballTrainingPlayerList.map(p => p.playerId);
+        }
+      });
+    }
     open.value = true;
     dialogTitle.value = "修改日程";
   });
@@ -314,10 +359,20 @@ function handleUpdate(row) {
 function submitForm() {
   proxy.$refs["eventRef"].validate(valid => {
     if (valid) {
-      // 将选中的球员ID转为后端需要的格式
-      form.value.footballSchedulePlayerList = selectedPlayerIds.value.map(playerId => ({
+      const playerData = selectedPlayerIds.value.map(playerId => ({
         playerId: playerId
       }));
+      // 如果是训练事件且有trainingId，同步更新训练记录的参与人员
+      if (form.value.eventType == 1 && form.value.trainingId) {
+        const trainingData = {
+          id: form.value.trainingId,
+          footballTrainingPlayerList: playerData
+        };
+        updateTraining(trainingData).then(() => {
+          proxy.$modal.msgSuccess("参与人员已同步到训练记录");
+        }).catch(() => {});
+      }
+      form.value.footballSchedulePlayerList = playerData;
       if (form.value.id != null) {
         updateEvent(form.value).then(response => {
           proxy.$modal.msgSuccess("修改成功");
@@ -401,6 +456,34 @@ function getPositionLabel(value) {
   return map[value] || value;
 }
 
+/** 点击训练事件，查看训练详情 */
+function handleTrainingClick(item) {
+  // 只有训练类型且有trainingId时才响应
+  if (item.eventType != 1 || !item.trainingId) return;
+  getTraining(item.trainingId).then(response => {
+    trainingDetail.value = response.data;
+    trainingDetailOpen.value = true;
+  });
+}
+
+/** 获取训练类型标签 */
+function getTrainingTypeLabel(value) {
+  const map = { 0: '体能', 1: '战术', 2: '技术', 3: '恢复', 4: '热身' };
+  return map[value] || value;
+}
+
+/** 获取训练状态标签 */
+function getTrainingStatusLabel(value) {
+  const map = { 0: '已计划', 1: '已完成', 2: '已取消' };
+  return map[value] || value;
+}
+
+/** 获取出勤状态标签 */
+function getAttendanceLabel(value) {
+  const map = { 0: '待确认', 1: '已出勤', 2: '缺勤', 3: '请假' };
+  return map[value] || value;
+}
+
 getList();
 </script>
 
@@ -448,6 +531,12 @@ getList();
 }
 .schedule-item:hover {
   background: #f5f8fa;
+}
+.schedule-item.clickable {
+  cursor: pointer;
+}
+.schedule-item.clickable:hover {
+  background: #e8f4fd;
 }
 .schedule-item:last-child {
   border-bottom: none;

@@ -96,7 +96,7 @@
         </template>
       </el-table-column>
       <el-table-column label="场地" align="center" prop="venue" />
-      <el-table-column label="参与人数" align="center" prop="participantCount" width="100" />
+      <el-table-column label="预期参与人数" align="center" prop="participantCount" width="120" />
       <el-table-column label="出勤率" align="center" prop="attendanceRate" width="100">
         <template #default="scope">
           <span>{{ scope.row.attendanceRate || '-' }}</span>
@@ -125,7 +125,7 @@
     />
 
     <!-- 新增/修改训练对话框 -->
-    <el-dialog :title="title" v-model="open" width="500px" append-to-body>
+    <el-dialog :title="title" v-model="open" width="680px" append-to-body>
       <el-form ref="trainingRef" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="训练名称" prop="title">
           <el-input v-model="form.title" placeholder="请输入训练名称" />
@@ -186,6 +186,24 @@
             />
           </el-select>
         </el-form-item>
+        <el-table v-if="selectedPlayerIds.length > 0" :data="selectedPlayerIds.map(id => ({ id, ...playerList.find(p => p.id === id) }))" border size="small" max-height="200">
+          <el-table-column label="球员" prop="nameCn" align="center">
+            <template #default="scope">
+              {{ scope.row.nameCn }}（{{ getPositionLabel(scope.row.position) }}）
+            </template>
+          </el-table-column>
+          <el-table-column label="出勤状态" align="center" width="150">
+            <template #default="scope">
+              <el-tag
+                :type="attendanceMap[scope.row.id] === 1 ? 'success' : attendanceMap[scope.row.id] === 2 ? 'danger' : attendanceMap[scope.row.id] === 3 ? 'warning' : 'info'"
+                style="cursor: pointer; min-width: 70px; text-align: center;"
+                @click="cycleAttendance(scope.row.id)"
+              >
+                {{ getAttendanceLabel(attendanceMap[scope.row.id]) }}
+              </el-tag>
+            </template>
+          </el-table-column>
+        </el-table>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
@@ -208,6 +226,7 @@ const { football_training_type, football_training_status, football_attendance_st
 const trainingList = ref([]);
 const playerList = ref([]);
 const selectedPlayerIds = ref([]);
+const attendanceMap = ref({});
 const open = ref(false);
 const loading = ref(true);
 const showSearch = ref(true);
@@ -261,6 +280,22 @@ function getPlayerList() {
   });
 }
 
+/** 监听球员选择变化，同步出勤状态 */
+watch(selectedPlayerIds, (newIds, oldIds) => {
+  // 新增的球员默认出勤状态为 0（待确认）
+  newIds.forEach(id => {
+    if (attendanceMap.value[id] === undefined) {
+      attendanceMap.value[id] = 0;
+    }
+  });
+  // 移除的球员清理出勤状态
+  Object.keys(attendanceMap.value).forEach(id => {
+    if (!newIds.includes(Number(id))) {
+      delete attendanceMap.value[id];
+    }
+  });
+});
+
 // 取消按钮
 function cancel() {
   open.value = false;
@@ -286,6 +321,7 @@ function reset() {
     delFlag: null
   };
   selectedPlayerIds.value = [];
+  attendanceMap.value = {};
   proxy.resetForm("trainingRef");
 }
 
@@ -323,6 +359,9 @@ function handleUpdate(row) {
     form.value = response.data;
     if (response.data.footballTrainingPlayerList) {
       selectedPlayerIds.value = response.data.footballTrainingPlayerList.map(p => p.playerId);
+      response.data.footballTrainingPlayerList.forEach(p => {
+        attendanceMap.value[p.playerId] = p.attendanceStatus ?? 0;
+      });
     }
     open.value = true;
     title.value = "修改训练";
@@ -336,6 +375,9 @@ function handleDetail(row) {
     form.value = response.data;
     if (response.data.footballTrainingPlayerList) {
       selectedPlayerIds.value = response.data.footballTrainingPlayerList.map(p => p.playerId);
+      response.data.footballTrainingPlayerList.forEach(p => {
+        attendanceMap.value[p.playerId] = p.attendanceStatus ?? 0;
+      });
     }
     open.value = true;
     title.value = "训练详情";
@@ -347,7 +389,8 @@ function submitForm() {
   proxy.$refs["trainingRef"].validate(valid => {
     if (valid) {
       form.value.footballTrainingPlayerList = selectedPlayerIds.value.map(playerId => ({
-        playerId: playerId
+        playerId: playerId,
+        attendanceStatus: attendanceMap.value[playerId] ?? 0
       }));
       if (form.value.id != null) {
         updateTraining(form.value).then(response => {
@@ -381,6 +424,18 @@ function handleDelete(row) {
 function getPositionLabel(value) {
   const map = { '0': '守门员', '1': '后卫', '2': '中场', '3': '前锋' };
   return map[value] || value;
+}
+
+/** 出勤状态编码转文字 */
+function getAttendanceLabel(value) {
+  const map = { 0: '待确认', 1: '已出勤', 2: '缺勤', 3: '请假' };
+  return map[value] ?? '待确认';
+}
+
+/** 点击标签循环切换出勤状态 */
+function cycleAttendance(playerId) {
+  const current = attendanceMap.value[playerId] ?? 0;
+  attendanceMap.value[playerId] = (current + 1) % 4;
 }
 
 /** 导出按钮操作 */
