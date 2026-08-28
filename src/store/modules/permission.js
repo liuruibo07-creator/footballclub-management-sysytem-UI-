@@ -43,11 +43,20 @@ const usePermissionStore = defineStore(
             const rewriteRoutes = filterAsyncRouter(rdata, false, true)
             const defaultRoutes = filterAsyncRouter(defaultData)
             const asyncRoutes = filterDynamicRoutes(dynamicRoutes)
+            // 注册前端硬编码的动态路由
             asyncRoutes.forEach(route => { router.addRoute(route) })
+            // 注册后端返回的动态路由（关键：必须添加到 router 才能匹配）
+            rewriteRoutes.forEach(route => { router.addRoute(route) })
             this.setRoutes(rewriteRoutes)
             this.setSidebarRouters(constantRoutes.concat(sidebarRoutes))
             this.setDefaultRoutes(sidebarRoutes)
             this.setTopbarRoutes(defaultRoutes)
+            // 在所有动态路由添加完毕后，最后注册 catch-all 404 路由
+            router.addRoute({
+              path: '/:pathMatch(.*)*',
+              component: () => import('@/views/error/404'),
+              hidden: true
+            })
             resolve(rewriteRoutes)
           })
         })
@@ -74,6 +83,10 @@ function filterAsyncRouter(asyncRouterMap, lastRouter = false, type = false) {
       }
     }
     if (route.children != null && route.children && route.children.length) {
+      // 修复：子目录（非顶级）的 Layout 应改为 ParentView，避免嵌套完整布局
+      if (lastRouter && route.component === Layout) {
+        route.component = ParentView
+      }
       route.children = filterAsyncRouter(route.children, route, type)
     } else {
       delete route['children']

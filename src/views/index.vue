@@ -174,11 +174,11 @@ function formatScheduleTime(dateTime) {
 }
 
 function viewAllSchedules() {
-  router.push({ path: '/cm/event', query: { status: '0' } })
+  router.push({ path: '/cm/competition/event' })
 }
 
 function viewAllMatches() {
-  router.push({ path: '/cm/match', query: { status: '1' } })
+  router.push({ path: '/cm/competition/match' })
 }
 
 function loadHomeData() {

@@ -9,6 +9,15 @@ export function listPp(query) {
   })
 }
 
+// 查询球员列表（训练管理等模块使用）
+export function listPlayer(query) {
+  return request({
+    url: '/pp/pp/list',
+    method: 'get',
+    params: query
+  })
+}
+
 // 查询球员档案详细
 export function getPp(id) {
   return request({

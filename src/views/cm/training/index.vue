@@ -199,7 +199,7 @@
 
 <script setup name="Training">
 import { listTraining, getTraining, delTraining, addTraining, updateTraining } from "@/api/system/training";
-import { listPlayer } from "@/api/player/player";
+import { listPlayer } from "@/api/pp/pp";
 
 const { proxy } = getCurrentInstance();
 
@@ -248,6 +248,8 @@ function getList() {
   listTraining(queryParams.value).then(response => {
     trainingList.value = response.rows;
     total.value = response.total;
+    loading.value = false;
+  }).catch(() => {
     loading.value = false;
   });
 }
