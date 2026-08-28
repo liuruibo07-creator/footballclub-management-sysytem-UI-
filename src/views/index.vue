@@ -186,6 +186,9 @@ function loadHomeData() {
   loadPendingSchedules()
 }
 
+// 首次挂载时加载（transition+keep-alive 组合下 onActivated 首次不触发）
+onMounted(loadHomeData)
+// 每次从缓存重新激活时刷新
 onActivated(loadHomeData)
 
 function showMessage(target) {
