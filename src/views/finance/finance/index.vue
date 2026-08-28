@@ -90,7 +90,40 @@
           v-hasPermi="['finance:finance:export']"
         >导出</el-button>
       </el-col>
+      <el-col :span="1.5">
+        <el-button
+          type="info"
+          plain
+          icon="DataAnalysis"
+          @click="handleSummary"
+          v-hasPermi="['finance:finance:list']"
+        >{{ showSummary ? '收起总结' : '总结' }}</el-button>
+      </el-col>
       <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
+    </el-row>
+
+    <el-row v-if="showSummary" :gutter="20" class="finance-summary" v-loading="summaryLoading">
+      <el-col :xs="24" :sm="8">
+        <el-card shadow="never" class="summary-card">
+          <div class="summary-title">赛季总收入</div>
+          <div class="summary-value summary-income">{{ formatCurrency(summary.totalIncome) }}</div>
+          <div class="summary-note">仅球队工作人员可见</div>
+        </el-card>
+      </el-col>
+      <el-col :xs="24" :sm="8">
+        <el-card shadow="never" class="summary-card">
+          <div class="summary-title">赛季总支出</div>
+          <div class="summary-value summary-expense">{{ formatCurrency(summary.totalExpense) }}</div>
+          <div class="summary-note">仅球队工作人员可见</div>
+        </el-card>
+      </el-col>
+      <el-col :xs="24" :sm="8">
+        <el-card shadow="never" class="summary-card">
+          <div class="summary-title">赛季净收支</div>
+          <div class="summary-value summary-balance">{{ formatCurrency(summary.netBalance) }}</div>
+          <div class="summary-note">仅球队工作人员可见</div>
+        </el-card>
+      </el-col>
     </el-row>
 
     <el-table v-loading="loading" :data="financeList" @selection-change="handleSelectionChange">
@@ -191,7 +224,7 @@
 </template>
 
 <script setup name="Finance">
-import { listFinance, getFinance, delFinance, addFinance, updateFinance } from "@/api/finance/finance";
+import { listFinance, getFinance, delFinance, addFinance, updateFinance, getFinanceSummary } from "@/api/finance/finance";
 
 const { proxy } = getCurrentInstance();
 const { detail_category, income_expense_type } = proxy.useDict('detail_category', 'income_expense_type');
@@ -205,6 +238,13 @@ const single = ref(true);
 const multiple = ref(true);
 const total = ref(0);
 const title = ref("");
+const showSummary = ref(false);
+const summaryLoading = ref(false);
+const summary = ref({
+  totalIncome: 0,
+  totalExpense: 0,
+  netBalance: 0
+});
 
 const data = reactive({
   form: {},
@@ -246,6 +286,40 @@ function getList() {
     total.value = response.total;
     loading.value = false;
   });
+  if (showSummary.value) {
+    loadSummary();
+  }
+}
+
+/** 查询财务汇总 */
+function loadSummary() {
+  summaryLoading.value = true;
+  getFinanceSummary().then(response => {
+    summary.value = response.data || {
+      totalIncome: 0,
+      totalExpense: 0,
+      netBalance: 0
+    };
+  }).finally(() => {
+    summaryLoading.value = false;
+  });
+}
+
+/** 展开或收起财务总结 */
+function handleSummary() {
+  showSummary.value = !showSummary.value;
+  if (showSummary.value) {
+    loadSummary();
+  }
+}
+
+/** 金额格式化 */
+function formatCurrency(value) {
+  return new Intl.NumberFormat('zh-CN', {
+    style: 'currency',
+    currency: 'CNY',
+    minimumFractionDigits: 2
+  }).format(Number(value || 0));
 }
 
 // 取消按钮
@@ -352,3 +426,50 @@ function handleExport() {
 
 getList();
 </script>
+
+<style scoped>
+.finance-summary {
+  margin-bottom: 16px;
+}
+
+.summary-card {
+  text-align: center;
+}
+
+.summary-title,
+.summary-note {
+  color: #909399;
+}
+
+.summary-title {
+  font-size: 16px;
+}
+
+.summary-value {
+  margin: 14px 0;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.summary-income {
+  color: #18b566;
+}
+
+.summary-expense {
+  color: #f56c6c;
+}
+
+.summary-balance {
+  color: #409eff;
+}
+
+.summary-note {
+  font-size: 14px;
+}
+
+@media (max-width: 767px) {
+  .summary-card {
+    margin-bottom: 12px;
+  }
+}
+</style>
