@@ -127,7 +127,7 @@
                 <span class="overview-kicker">TEAM</span>
                 <h3>球队状态</h3>
               </div>
-              <span class="sample-badge">前端示例</span>
+
             </div>
             <div class="health-stats">
               <div v-for="item in teamHealthStats" :key="item.label" class="health-stat" :class="item.tone">
