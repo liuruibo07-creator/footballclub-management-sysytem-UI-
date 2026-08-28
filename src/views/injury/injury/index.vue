@@ -41,27 +41,7 @@
           icon="Plus"
           @click="handleAdd"
           v-hasPermi="['injury:injury:add']"
-        >新增</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="success"
-          plain
-          icon="Edit"
-          :disabled="single"
-          @click="handleUpdate"
-          v-hasPermi="['injury:injury:edit']"
-        >修改</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="danger"
-          plain
-          icon="Delete"
-          :disabled="multiple"
-          @click="handleDelete"
-          v-hasPermi="['injury:injury:remove']"
-        >删除</el-button>
+        >新增伤病记录</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
@@ -75,6 +55,7 @@
       <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
+<<<<<<< Updated upstream
     <el-table v-loading="loading" :data="injuryList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="序号" align="center" prop="id" width="60" />
@@ -82,11 +63,58 @@
       <el-table-column label="伤病类型" align="center" prop="injuryType" />
       <el-table-column label="受伤位置" align="center" prop="injuryLocation" />
       <el-table-column label="受伤日期" align="center" prop="injuryDate" width="120">
+=======
+    <el-row :gutter="16" class="stats-row">
+      <el-col :span="6">
+        <div class="stat-card">
+          <div class="stat-title">当前伤病总人数</div>
+          <div class="stat-value stat-orange">{{ stats.totalInjury }}</div>
+        </div>
+      </el-col>
+      <el-col :span="6">
+        <div class="stat-card">
+          <div class="stat-title">治疗中</div>
+          <div class="stat-value stat-red">{{ stats.treating }}</div>
+        </div>
+      </el-col>
+      <el-col :span="6">
+        <div class="stat-card">
+          <div class="stat-title">康复中</div>
+          <div class="stat-value stat-orange">{{ stats.recovering }}</div>
+        </div>
+      </el-col>
+      <el-col :span="6">
+        <div class="stat-card">
+          <div class="stat-title">本月已康复</div>
+          <div class="stat-value stat-green">{{ stats.recoveredMonth }}</div>
+        </div>
+      </el-col>
+    </el-row>
+
+    <el-table v-loading="loading" :data="injuryList">
+      <el-table-column label="序号" align="center" width="80">
+        <template #default="scope">
+          {{ (queryParams.pageNum - 1) * queryParams.pageSize + scope.$index + 1 }}
+        </template>
+      </el-table-column>
+      <el-table-column label="球员" align="center" prop="playerName">
+        <template #default="scope">
+          <span>{{ scope.row.playerName || scope.row.playerId }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="伤病类型" align="center" prop="injuryType" />
+      <el-table-column label="受伤部位" align="center" prop="injuryLocation" />
+      <el-table-column label="受伤日期" align="center" prop="injuryDate" width="180">
+>>>>>>> Stashed changes
         <template #default="scope">
           <span>{{ parseTime(scope.row.injuryDate, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
+<<<<<<< Updated upstream
       <el-table-column label="预期复出" align="center" prop="expectedReturnDate" width="120">
+=======
+      <el-table-column label="预计复出" align="center" prop="expectedReturnDate" width="180">
+>>>>>>> Stashed changes
         <template #default="scope">
           <span>{{ parseTime(scope.row.expectedReturnDate, '{y}-{m}-{d}') }}</span>
         </template>
@@ -133,8 +161,8 @@
         <el-form-item label="伤病类型" prop="injuryType">
           <el-input v-model="form.injuryType" placeholder="请输入伤病类型" />
         </el-form-item>
-        <el-form-item label="受伤位置" prop="injuryLocation">
-          <el-input v-model="form.injuryLocation" placeholder="请输入受伤位置" />
+        <el-form-item label="受伤部位" prop="injuryLocation">
+          <el-input v-model="form.injuryLocation" placeholder="请输入受伤部位" />
         </el-form-item>
         <el-form-item label="受伤日期" prop="injuryDate">
           <el-date-picker clearable
@@ -145,11 +173,12 @@
             style="width: 100%">
           </el-date-picker>
         </el-form-item>
-        <el-form-item label="预期复出日期" prop="expectedReturnDate">
+        <el-form-item label="预计复出" prop="expectedReturnDate">
           <el-date-picker clearable
             v-model="form.expectedReturnDate"
             type="date"
             value-format="YYYY-MM-DD"
+<<<<<<< Updated upstream
             placeholder="请选择预期复出日期"
             style="width: 100%">
           </el-date-picker>
@@ -161,6 +190,9 @@
             value-format="YYYY-MM-DD"
             placeholder="请选择实际返回日期"
             style="width: 100%">
+=======
+            placeholder="请选择预计复出">
+>>>>>>> Stashed changes
           </el-date-picker>
         </el-form-item>
         <el-form-item label="康复状态" prop="recoveryStatus">
@@ -170,6 +202,14 @@
             <el-radio :label="2">已复出</el-radio>
             <el-radio :label="3">已康复</el-radio>
           </el-radio-group>
+        </el-form-item>
+        <el-form-item v-if="form.recoveryStatus === 3" label="实际返回日期" prop="actualReturnDate">
+          <el-date-picker clearable
+            v-model="form.actualReturnDate"
+            type="date"
+            value-format="YYYY-MM-DD"
+            placeholder="请选择实际返回日期">
+          </el-date-picker>
         </el-form-item>
         <el-form-item label="康复计划" prop="rehabPlan">
           <el-input v-model="form.rehabPlan" type="textarea" :rows="3" placeholder="请输入康复计划" />
@@ -198,11 +238,15 @@ const playerList = ref([]);
 const open = ref(false);
 const loading = ref(true);
 const showSearch = ref(true);
-const ids = ref([]);
-const single = ref(true);
-const multiple = ref(true);
 const total = ref(0);
 const title = ref("");
+
+const stats = reactive({
+  totalInjury: 0,
+  treating: 0,
+  recovering: 0,
+  recoveredMonth: 0
+});
 
 const data = reactive({
   form: {},
@@ -234,6 +278,23 @@ const data = reactive({
 
 const { queryParams, form, rules } = toRefs(data);
 
+<<<<<<< Updated upstream
+=======
+// 康复状态选择"已康复"时自动填充实际返回日期（默认今天），保证"本月已康复"能统计到
+watch(() => form.value.recoveryStatus, (val) => {
+  if (val === 3 && !form.value.actualReturnDate) {
+    form.value.actualReturnDate = proxy.parseTime(new Date(), '{y}-{m}-{d}');
+  }
+});
+
+/** 查询球员下拉数据 */
+function getPlayerOptions() {
+  fetchPlayerOptions().then(response => {
+    playerOptions.value = response.data;
+  });
+}
+
+>>>>>>> Stashed changes
 /** 查询伤病康复列表 */
 function getList() {
   loading.value = true;
@@ -241,6 +302,31 @@ function getList() {
     injuryList.value = response.rows;
     total.value = response.total;
     loading.value = false;
+    getStats();
+  });
+}
+
+/** 查询伤病统计卡片数据 */
+function getStats() {
+  listInjury({ pageNum: 1, pageSize: 999999 }).then(response => {
+    const rows = response.rows || [];
+    const now = new Date();
+    const monthPrefix = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+    let treating = 0;
+    let recovering = 0;
+    let recoveredMonth = 0;
+    rows.forEach(row => {
+      if (row.recoveryStatus === 1) treating++;
+      if (row.recoveryStatus === 2) recovering++;
+      if (row.recoveryStatus === 3 && row.actualReturnDate && String(row.actualReturnDate).startsWith(monthPrefix)) {
+        recoveredMonth++;
+      }
+    });
+    // 当前伤病总人数：尚未康复的记录（未知/治疗中/康复中）
+    stats.totalInjury = rows.filter(r => r.recoveryStatus !== 3).length;
+    stats.treating = treating;
+    stats.recovering = recovering;
+    stats.recoveredMonth = recoveredMonth;
   });
 }
 
@@ -303,13 +389,6 @@ function resetQuery() {
   handleQuery();
 }
 
-// 多选框选中数据
-function handleSelectionChange(selection) {
-  ids.value = selection.map(item => item.id);
-  single.value = selection.length != 1;
-  multiple.value = !selection.length;
-}
-
 /** 新增按钮操作 */
 function handleAdd() {
   reset();
@@ -320,8 +399,12 @@ function handleAdd() {
 /** 修改按钮操作 */
 function handleUpdate(row) {
   reset();
+<<<<<<< Updated upstream
   const _id = row.id || ids.value
   getInjury(_id).then(response => {
+=======
+  getInjury(row.id).then(response => {
+>>>>>>> Stashed changes
     form.value = response.data;
     open.value = true;
     title.value = "修改伤病康复记录";
@@ -351,9 +434,8 @@ function submitForm() {
 
 /** 删除按钮操作 */
 function handleDelete(row) {
-  const _ids = row.id || ids.value;
-  proxy.$modal.confirm('是否确认删除伤病康复编号为"' + _ids + '"的数据项？').then(function() {
-    return delInjury(_ids);
+  proxy.$modal.confirm('是否确认删除伤病康复编号为"' + row.id + '"的数据项？').then(function() {
+    return delInjury(row.id);
   }).then(() => {
     getList();
     proxy.$modal.msgSuccess("删除成功");
@@ -370,3 +452,52 @@ function handleExport() {
 getPlayerOptions();
 getList();
 </script>
+<<<<<<< Updated upstream
+=======
+
+<style scoped>
+.action-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.stats-row {
+  margin-bottom: 16px;
+}
+
+.stat-card {
+  background: #fff;
+  border: 1px solid #ebeef5;
+  border-radius: 6px;
+  padding: 20px 16px;
+  text-align: center;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.stat-title {
+  font-size: 14px;
+  color: #909399;
+  margin-bottom: 12px;
+}
+
+.stat-value {
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.stat-orange {
+  color: #ff9800;
+}
+
+.stat-red {
+  color: #f5222d;
+}
+
+.stat-green {
+  color: #52c41a;
+}
+</style>
+>>>>>>> Stashed changes
