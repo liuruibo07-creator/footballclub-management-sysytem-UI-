@@ -23,9 +23,6 @@
         </div>
       </div>
 
-      <button class="prepare-button" type="button" @click="startPreparation">
-        进入赛前准备 <el-icon><Right /></el-icon>
-      </button>
     </section>
 
     <div class="dashboard-grid">
@@ -384,32 +381,6 @@ function showMessage(target) {
   }
 }
 
-.prepare-button {
-  position: absolute;
-  z-index: 2;
-  right: 48px;
-  bottom: 38px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
-  min-width: 160px;
-  height: 42px;
-  padding: 0 24px;
-  border: 0;
-  border-radius: 6px;
-  background: #1767ee;
-  box-shadow: 0 8px 22px rgba(0, 61, 181, 0.35);
-  color: #fff;
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-  transition: transform 0.18s ease, background 0.18s ease;
-
-  &:hover { transform: translateY(-2px); background: #2877fa; }
-  &:focus-visible { outline: 3px solid rgba(255, 255, 255, 0.75); outline-offset: 2px; }
-}
-
 .dashboard-grid {
   display: grid;
   grid-template-columns: minmax(0, 0.94fr) minmax(0, 1.06fr);
@@ -723,7 +694,6 @@ function showMessage(target) {
 }
 
 @media (max-width: 900px) {
-  .prepare-button { right: 28px; bottom: 26px; }
   .team-overview-grid { grid-template-columns: 1fr; }
 }
 
@@ -745,13 +715,6 @@ function showMessage(target) {
   .team strong { font-size: 15px; }
   .match-meta b { font-size: 30px; }
   .match-meta span { font-size: 11px; }
-  .prepare-button {
-    right: 50%;
-    bottom: 28px;
-    transform: translateX(50%);
-
-    &:hover { transform: translate(50%, -2px); }
-  }
   .panel { min-height: auto; padding: 0 15px 68px; }
   .season-stats { grid-template-columns: 1fr 0.8fr 1.5fr; }
   .stat-item { padding: 0 9px; }
