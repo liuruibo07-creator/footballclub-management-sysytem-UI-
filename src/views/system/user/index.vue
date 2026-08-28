@@ -1,19 +1,24 @@
 <template>
-   <div class="app-container">
-      <el-row :gutter="20">
+   <div class="app-container user-management-page">
+      <el-row :gutter="16" class="user-workspace">
          <!--部门数据-->
-         <el-col :span="4" :xs="24">
-            <div class="head-container">
+         <el-col :span="4" :xs="24" class="dept-panel-col">
+            <section class="dept-panel">
+               <div class="panel-heading">
+                  <h3>部门导航</h3>
+                  <span>按组织快速筛选用户</span>
+               </div>
+               <div class="head-container dept-search">
                <el-input
                   v-model="deptName"
                   placeholder="请输入部门名称"
                   clearable
                   prefix-icon="Search"
-                  style="margin-bottom: 20px"
                />
-            </div>
-            <div class="head-container">
+               </div>
+               <div class="head-container dept-tree-scroll">
                <el-tree
+                  class="dept-tree"
                   :data="deptOptions"
                   :props="{ label: 'label', children: 'children' }"
                   :expand-on-click-node="false"
@@ -24,11 +29,12 @@
                   default-expand-all
                   @node-click="handleNodeClick"
                />
-            </div>
+               </div>
+            </section>
          </el-col>
          <!--用户数据-->
-         <el-col :span="20" :xs="24">
-            <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
+         <el-col :span="20" :xs="24" class="user-content-col">
+            <el-form class="user-query-panel" :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
                <el-form-item label="用户名称" prop="userName">
                   <el-input
                      v-model="queryParams.userName"
@@ -47,21 +53,6 @@
                      @keyup.enter="handleQuery"
                   />
                </el-form-item>
-               <el-form-item label="状态" prop="status">
-                  <el-select
-                     v-model="queryParams.status"
-                     placeholder="用户状态"
-                     clearable
-                     style="width: 240px"
-                  >
-                     <el-option
-                        v-for="dict in sys_normal_disable"
-                        :key="dict.value"
-                        :label="dict.label"
-                        :value="dict.value"
-                     />
-                  </el-select>
-               </el-form-item>
                <el-form-item label="创建时间" style="width: 308px;">
                   <el-date-picker
                      v-model="dateRange"
@@ -78,7 +69,8 @@
                </el-form-item>
             </el-form>
 
-            <el-row :gutter="10" class="mb8">
+            <section class="user-table-card">
+            <el-row :gutter="10" class="user-toolbar">
                <el-col :span="1.5">
                   <el-button
                      type="primary"
@@ -129,14 +121,14 @@
                <right-toolbar v-model:showSearch="showSearch" @queryTable="getList" :columns="columns"></right-toolbar>
             </el-row>
 
-            <el-table v-loading="loading" :data="userList" @selection-change="handleSelectionChange">
-               <el-table-column type="selection" width="50" align="center" />
-               <el-table-column label="用户编号" align="center" key="userId" prop="userId" v-if="columns[0].visible" />
-               <el-table-column label="用户名称" align="center" key="userName" prop="userName" v-if="columns[1].visible" :show-overflow-tooltip="true" />
-               <el-table-column label="用户昵称" align="center" key="nickName" prop="nickName" v-if="columns[2].visible" :show-overflow-tooltip="true" />
-               <el-table-column label="部门" align="center" key="deptName" prop="dept.deptName" v-if="columns[3].visible" :show-overflow-tooltip="true" />
-               <el-table-column label="手机号码" align="center" key="phonenumber" prop="phonenumber" v-if="columns[4].visible" width="120" />
-               <el-table-column label="状态" align="center" key="status" v-if="columns[5].visible">
+            <el-table class="user-table" v-loading="loading" :data="userList" row-key="userId" stripe @selection-change="handleSelectionChange">
+               <el-table-column type="selection" width="48" align="center" />
+               <el-table-column label="用户编号" align="center" key="userId" prop="userId" v-if="columns[0].visible" width="96" />
+               <el-table-column label="用户名称" align="left" key="userName" prop="userName" v-if="columns[1].visible" min-width="130" :show-overflow-tooltip="true" />
+               <el-table-column label="用户昵称" align="left" key="nickName" prop="nickName" v-if="columns[2].visible" min-width="140" :show-overflow-tooltip="true" />
+               <el-table-column label="部门" align="left" key="deptName" prop="dept.deptName" v-if="columns[3].visible" min-width="180" :show-overflow-tooltip="true" />
+               <el-table-column label="手机号码" align="left" key="phonenumber" prop="phonenumber" v-if="columns[4].visible" width="140" />
+               <el-table-column label="状态" align="center" key="status" v-if="columns[5].visible" width="90">
                   <template #default="scope">
                      <el-switch
                         v-model="scope.row.status"
@@ -146,12 +138,12 @@
                      ></el-switch>
                   </template>
                </el-table-column>
-               <el-table-column label="创建时间" align="center" prop="createTime" v-if="columns[6].visible" width="160">
+               <el-table-column label="创建时间" align="center" prop="createTime" v-if="columns[6].visible" width="180">
                   <template #default="scope">
                      <span>{{ parseTime(scope.row.createTime) }}</span>
                   </template>
                </el-table-column>
-               <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width">
+               <el-table-column label="操作" align="center" width="160" fixed="right" class-name="small-padding">
                   <template #default="scope">
                      <el-tooltip content="修改" placement="top" v-if="scope.row.userId !== 1">
                         <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['system:user:edit']"></el-button>
@@ -175,6 +167,7 @@
                v-model:limit="queryParams.pageSize"
                @pagination="getList"
             />
+            </section>
          </el-col>
       </el-row>
 
@@ -250,22 +243,9 @@
                </el-col>
             </el-row>
             <el-row>
-               <el-col :span="12">
-                  <el-form-item label="岗位">
-                     <el-select v-model="form.postIds" multiple placeholder="请选择">
-                        <el-option
-                           v-for="item in postOptions"
-                           :key="item.postId"
-                           :label="item.postName"
-                           :value="item.postId"
-                           :disabled="item.status == 1"
-                        ></el-option>
-                     </el-select>
-                  </el-form-item>
-               </el-col>
-               <el-col :span="12">
+               <el-col :span="24">
                   <el-form-item label="角色">
-                     <el-select v-model="form.roleIds" multiple placeholder="请选择">
+                     <el-select v-model="form.roleIds" multiple placeholder="请选择" style="width: 100%">
                         <el-option
                            v-for="item in roleOptions"
                            :key="item.roleId"
@@ -350,7 +330,6 @@ const dateRange = ref([]);
 const deptName = ref("");
 const deptOptions = ref(undefined);
 const initPassword = ref(undefined);
-const postOptions = ref([]);
 const roleOptions = ref([]);
 /*** 用户导入参数 */
 const upload = reactive({
@@ -385,7 +364,6 @@ const data = reactive({
     pageSize: 10,
     userName: undefined,
     phonenumber: undefined,
-    status: undefined,
     deptId: undefined
   },
   rules: {
@@ -545,7 +523,6 @@ function reset() {
     sex: undefined,
     status: "0",
     remark: undefined,
-    postIds: [],
     roleIds: []
   };
   proxy.resetForm("userRef");
@@ -559,7 +536,6 @@ function cancel() {
 function handleAdd() {
   reset();
   getUser().then(response => {
-    postOptions.value = response.posts;
     roleOptions.value = response.roles;
     open.value = true;
     title.value = "添加用户";
@@ -572,9 +548,7 @@ function handleUpdate(row) {
   const userId = row.userId || ids.value;
   getUser(userId).then(response => {
     form.value = response.data;
-    postOptions.value = response.posts;
     roleOptions.value = response.roles;
-    form.value.postIds = response.postIds;
     form.value.roleIds = response.roleIds;
     open.value = true;
     title.value = "修改用户";
@@ -605,3 +579,186 @@ function submitForm() {
 getDeptTree();
 getList();
 </script>
+
+<style scoped>
+.user-management-page {
+  min-height: calc(100vh - 84px);
+  background: #f5f7fb;
+}
+
+.user-workspace {
+  align-items: stretch;
+}
+
+.dept-panel,
+.user-query-panel,
+.user-table-card {
+  background: #ffffff;
+  border: 1px solid #e7ebf2;
+  border-radius: 10px;
+  box-shadow: 0 3px 12px rgba(31, 45, 61, 0.04);
+}
+
+.dept-panel {
+  min-height: calc(100vh - 124px);
+  padding: 18px 14px;
+}
+
+.panel-heading {
+  margin-bottom: 16px;
+  padding: 0 4px;
+}
+
+.panel-heading h3 {
+  margin: 0 0 5px;
+  color: #27364b;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.panel-heading span {
+  color: #98a2b3;
+  font-size: 12px;
+}
+
+.dept-search {
+  margin-bottom: 16px;
+}
+
+.dept-tree-scroll {
+  max-height: calc(100vh - 250px);
+  overflow-y: auto;
+  border-top: 1px solid #f0f2f5;
+  padding-top: 12px;
+}
+
+.user-content-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.user-query-panel {
+  margin: 0;
+  padding: 18px 18px 2px;
+}
+
+.user-table-card {
+  overflow: hidden;
+}
+
+.user-toolbar {
+  margin: 0;
+  padding: 14px 16px;
+  border-bottom: 1px solid #edf0f5;
+}
+
+:deep(.dept-search .el-input__wrapper),
+:deep(.user-query-panel .el-input__wrapper),
+:deep(.user-query-panel .el-select__wrapper),
+:deep(.user-query-panel .el-date-editor) {
+  box-shadow: 0 0 0 1px #dfe4ec inset;
+}
+
+:deep(.dept-tree) {
+  color: #475467;
+  background: transparent;
+}
+
+:deep(.dept-tree .el-tree-node__content) {
+  height: 38px;
+  margin: 2px 0;
+  border-radius: 6px;
+}
+
+:deep(.dept-tree .el-tree-node__content:hover) {
+  color: #337ecc;
+  background: #f4f8ff;
+}
+
+:deep(.dept-tree .el-tree-node.is-current > .el-tree-node__content) {
+  color: #2478d4;
+  font-weight: 500;
+  background: #eaf3ff;
+}
+
+:deep(.user-query-panel .el-form-item) {
+  margin-right: 24px;
+  margin-bottom: 16px;
+}
+
+:deep(.user-query-panel .el-form-item__label) {
+  color: #475467;
+  font-weight: 600;
+}
+
+:deep(.user-toolbar .el-button) {
+  border-radius: 6px;
+}
+
+:deep(.user-table .el-table__header-wrapper th.el-table__cell),
+:deep(.user-table .el-table__fixed-header-wrapper th.el-table__cell) {
+  height: 48px !important;
+  color: #344054;
+  font-weight: 600;
+  background: #f7f9fc !important;
+}
+
+:deep(.user-table .el-table__row td.el-table__cell) {
+  height: 52px;
+  color: #475467;
+}
+
+:deep(.user-table .el-table__body tr:hover > td.el-table__cell) {
+  background: #eef6ff !important;
+}
+
+:deep(.user-table .el-button.is-link) {
+  width: 30px;
+  height: 30px;
+  margin: 0 1px;
+  border-radius: 6px;
+}
+
+:deep(.user-table .el-button.is-link:hover) {
+  background: #eaf3ff;
+}
+
+:deep(.user-table-card .pagination-container) {
+  height: auto;
+  margin: 0;
+  padding: 18px 16px !important;
+  border-top: 1px solid #edf0f5;
+}
+
+@media (max-width: 768px) {
+  .user-management-page {
+    min-height: auto;
+    padding: 12px;
+  }
+
+  .dept-panel {
+    min-height: auto;
+    margin-bottom: 14px;
+  }
+
+  .dept-tree-scroll {
+    max-height: 260px;
+  }
+
+  .user-query-panel {
+    padding: 14px 14px 0;
+  }
+
+  :deep(.user-query-panel .el-form-item) {
+    width: 100% !important;
+    margin-right: 0;
+  }
+
+  :deep(.user-query-panel .el-input),
+  :deep(.user-query-panel .el-select),
+  :deep(.user-query-panel .el-date-editor) {
+    width: 100% !important;
+  }
+}
+</style>
