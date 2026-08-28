@@ -92,19 +92,27 @@
         </div>
 
         <div class="team-overview-grid" aria-label="今日训练与球队状态">
-          <article class="overview-card training-card">
+          <article class="overview-card training-card" v-loading="trainingLoading">
             <div class="overview-card-header">
               <div>
                 <span class="overview-kicker">TODAY</span>
                 <h3>今日训练</h3>
               </div>
-              <span class="sample-badge">前端示例</span>
+              <span class="sample-badge" v-if="todayTrainings.length">{{ todayTrainings.length }} 项训练</span>
+              <span class="sample-badge" v-else>暂无安排</span>
             </div>
-            <strong class="training-subject">战术配合与定位球训练</strong>
-            <div class="training-meta">
-              <span><el-icon><Clock /></el-icon>15:30—17:30</span>
-              <span><el-icon><OfficeBuilding /></el-icon>天津泰达足球场</span>
-            </div>
+            <template v-if="todayTrainings.length">
+              <div v-for="item in todayTrainings" :key="item.id" style="margin-bottom: 10px;">
+                <strong class="training-subject">{{ item.title }}</strong>
+                <div class="training-meta">
+                  <span><el-icon><Clock /></el-icon>{{ formatTrainingTime(item.startTime) }}—{{ formatTrainingTime(item.endTime) }}</span>
+                  <span v-if="item.venue"><el-icon><OfficeBuilding /></el-icon>{{ item.venue }}</span>
+                </div>
+              </div>
+            </template>
+            <template v-else>
+              <strong class="training-subject" style="color: #909399;">今日暂无训练安排</strong>
+            </template>
             <button class="card-link" type="button" @click="viewTraining">
               查看训练计划 <el-icon><Right /></el-icon>
             </button>
@@ -139,6 +147,7 @@ import { Calendar, Clock, OfficeBuilding, Right } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { getPendingEventSummary } from '@/api/system/event'
 import { getSeasonOverview } from '@/api/match/match'
+import { listTraining } from '@/api/system/training'
 import tianjinLogo from '@/assets/images/tianjin-jinmen-tiger.png'
 import qingdaoLogo from '@/assets/images/qingdao-west-coast.png'
 
@@ -166,6 +175,29 @@ const teamHealthStats = [
   { label: '康复中', value: 2, tone: 'recovering' },
   { label: '缺席', value: 1, tone: 'absent' }
 ]
+
+const todayTrainings = ref([])
+const trainingLoading = ref(false)
+
+/** 加载今日训练数据 */
+function loadTodayTrainings() {
+  trainingLoading.value = true
+  const now = new Date()
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+  listTraining({ pageSize: 200 }).then(response => {
+    const rows = response.rows || []
+    todayTrainings.value = rows.filter(item => {
+      if (!item.startTime) return false
+      return item.startTime.startsWith(today)
+    })
+  }).finally(() => {
+    trainingLoading.value = false
+  })
+}
+
+function startPreparation() {
+  ElMessage.success('已进入青岛西海岸赛前准备流程')
+}
 
 function loadPendingSchedules() {
   pendingLoading.value = true
@@ -211,6 +243,15 @@ function formatScheduleTime(dateTime) {
   return `${month}-${day} ${hour}:${minute}`
 }
 
+function formatTrainingTime(dateTime) {
+  if (!dateTime) return '--:--'
+  const date = new Date(dateTime.replace(' ', 'T'))
+  if (Number.isNaN(date.getTime())) return '--:--'
+  const hour = String(date.getHours()).padStart(2, '0')
+  const minute = String(date.getMinutes()).padStart(2, '0')
+  return `${hour}:${minute}`
+}
+
 function viewAllSchedules() {
   router.push({ path: '/cm/competition/event', query: { status: '0' } })
 }
@@ -230,8 +271,12 @@ function viewInjuries() {
 function loadHomeData() {
   loadSeasonOverview()
   loadPendingSchedules()
+  loadTodayTrainings()
 }
 
+// 首次挂载时加载（transition+keep-alive 组合下 onActivated 首次不触发）
+onMounted(loadHomeData)
+// 每次从缓存重新激活时刷新
 onActivated(loadHomeData)
 
 function showMessage(target) {
