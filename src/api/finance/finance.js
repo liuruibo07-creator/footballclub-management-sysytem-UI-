@@ -9,6 +9,14 @@ export function listFinance(query) {
   })
 }
 
+// 查询财务收支汇总
+export function getFinanceSummary() {
+  return request({
+    url: '/finance/finance/summary',
+    method: 'get'
+  })
+}
+
 // 查询财务收支详细
 export function getFinance(id) {
   return request({
