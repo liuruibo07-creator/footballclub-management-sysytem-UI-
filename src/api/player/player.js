@@ -3,7 +3,7 @@ import request from '@/utils/request'
 // 查询球员档案列表
 export function listPlayer(query) {
   return request({
-    url: '/player/player/list',
+    url: '/pp/pp/list',
     method: 'get',
     params: query
   })
@@ -12,7 +12,7 @@ export function listPlayer(query) {
 // 查询球员档案详细
 export function getPlayer(id) {
   return request({
-    url: '/player/player/' + id,
+    url: '/pp/pp/' + id,
     method: 'get'
   })
 }
@@ -20,7 +20,7 @@ export function getPlayer(id) {
 // 新增球员档案
 export function addPlayer(data) {
   return request({
-    url: '/player/player',
+    url: '/pp/pp',
     method: 'post',
     data: data
   })
@@ -29,7 +29,7 @@ export function addPlayer(data) {
 // 修改球员档案
 export function updatePlayer(data) {
   return request({
-    url: '/player/player',
+    url: '/pp/pp',
     method: 'put',
     data: data
   })
@@ -38,7 +38,7 @@ export function updatePlayer(data) {
 // 删除球员档案
 export function delPlayer(id) {
   return request({
-    url: '/player/player/' + id,
+    url: '/pp/pp/' + id,
     method: 'delete'
   })
 }
