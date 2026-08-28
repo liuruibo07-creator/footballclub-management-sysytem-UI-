@@ -4,7 +4,6 @@
       <div class="hero-shade" />
       <div class="hero-heading">
         <span id="next-match-title">下一场比赛</span>
-        <strong>中超联赛 第25轮</strong>
       </div>
 
       <div class="match-stage">
@@ -13,6 +12,7 @@
           <strong>天津津门虎</strong>
         </div>
         <div class="match-meta">
+          <strong>中超联赛 第25轮</strong>
           <b>VS</b>
           <span><el-icon><Clock /></el-icon>2026-08-29&nbsp; 19:00</span>
           <span><el-icon><OfficeBuilding /></el-icon>天津泰达足球场</span>
@@ -198,11 +198,6 @@ function showMessage(target) {
   padding: 27px 35px 0;
   font-size: 18px;
   font-weight: 700;
-
-  strong {
-    grid-column: 2;
-    font-size: 19px;
-  }
 }
 
 .match-stage {
@@ -242,6 +237,12 @@ function showMessage(target) {
   align-items: center;
   gap: 9px;
   color: rgba(255, 255, 255, 0.9);
+
+  > strong {
+    color: #fff;
+    font-size: 19px;
+    white-space: nowrap;
+  }
 
   b {
     margin-bottom: 3px;
@@ -491,8 +492,6 @@ function showMessage(target) {
     gap: 7px;
     padding: 20px;
     text-align: center;
-
-    strong { grid-column: auto; grid-row: 1; }
   }
   .match-stage { grid-template-columns: 1fr 105px 1fr; width: calc(100% - 24px); margin-top: 26px; }
   .team img { width: 68px; height: 68px; }
