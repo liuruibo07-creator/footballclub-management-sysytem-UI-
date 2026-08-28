@@ -1,13 +1,3 @@
-<<<<<<< HEAD
-<script setup>
-// 比赛管理页面 - 路由组件 system/event/index 映射到 match/match 组件
-import Match from '@/views/match/match/index.vue'
-</script>
-
-<template>
-  <Match />
-</template>
-=======
 <template>
   <div class="app-container">
     <!-- 搜索栏 -->
@@ -518,4 +508,3 @@ getList();
   border: 1px solid #ffd591;
 }
 </style>
->>>>>>> 8096398de54e91dbb40fdb329d48e83e887882df
