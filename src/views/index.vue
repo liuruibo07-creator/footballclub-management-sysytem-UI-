@@ -151,11 +151,8 @@ import { Calendar, Clock, OfficeBuilding, Right } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { getPendingEventSummary } from '@/api/system/event'
 import { getNextMatch, getSeasonOverview } from '@/api/match/match'
+import { listTeamLogo } from '@/api/match/teamLogo'
 import { listTraining } from '@/api/system/training'
-import tianjinLogo from '@/assets/images/tianjin-jinmen-tiger.png'
-import qingdaoLogo from '@/assets/images/qingdao-west-coast.png'
-import shandongLogo from '@/assets/images/shandong-taishan.png'
-import zhejiangLogo from '@/assets/images/zhejiang-professional.png'
 
 defineOptions({ name: 'Index' })
 
@@ -187,15 +184,8 @@ const teamHealthStats = [
 const todayTrainings = ref([])
 const trainingLoading = ref(false)
 
-const teamLogos = {
-  '天津津门虎': tianjinLogo,
-  '青岛西海岸': qingdaoLogo,
-  '山东泰山': shandongLogo,
-  '浙江俱乐部绿城': zhejiangLogo,
-  '浙江职业足球俱乐部': zhejiangLogo,
-  '浙江队': zhejiangLogo,
-  '浙江FC': zhejiangLogo
-}
+// 队名 -> OSS队徽URL映射,由loadTeamLogos()从后端football_team_logo表加载
+const logoMap = ref({})
 
 function loadNextMatch() {
   nextMatchLoading.value = true
@@ -207,7 +197,7 @@ function loadNextMatch() {
 }
 
 function getTeamLogo(teamName) {
-  return teamLogos[teamName] || ''
+  return logoMap.value[teamName] || ''
 }
 
 function getTeamAbbr(teamName) {
@@ -320,11 +310,23 @@ function viewInjuries() {
   router.push('/cm/team/injury')
 }
 
+/** 加载球队队徽映射(队名 -> OSS完整URL) */
+function loadTeamLogos() {
+  listTeamLogo().then(response => {
+    const map = {}
+    ;(response.data || []).forEach(item => {
+      if (item.logoUrl) map[item.teamName] = item.logoUrl
+    })
+    logoMap.value = map
+  }).catch(() => {})
+}
+
 function loadHomeData() {
   loadNextMatch()
   loadSeasonOverview()
   loadPendingSchedules()
   loadTodayTrainings()
+  loadTeamLogos()
 }
 
 // 首次挂载时加载（transition+keep-alive 组合下 onActivated 首次不触发）
