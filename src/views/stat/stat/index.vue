@@ -626,12 +626,12 @@ loadAllPlayers()
   justify-content: space-between;
   margin-bottom: 16px;
   padding-bottom: 12px;
-  border-bottom: 1px solid #e8e8e8;
+  border-bottom: 1px solid rgba(145, 166, 195, 0.14);
 }
 .page-title {
   font-size: 18px;
   font-weight: 600;
-  color: #333;
+  color: #f3f6fa;
   margin: 0;
 }
 .page-filter {
@@ -640,7 +640,7 @@ loadAllPlayers()
 }
 .filter-label {
   font-size: 13px;
-  color: #666;
+  color: #8f9cb0;
 }
 
 /* ===== 统计卡片 ===== */
@@ -648,46 +648,46 @@ loadAllPlayers()
   margin-bottom: 16px;
 }
 .stat-card {
-  background: #fff;
-  border: 1px solid #ebeef5;
+  background: #101b29;
+  border: 1px solid #223044;
   border-radius: 6px;
   padding: 20px 16px;
   text-align: center;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  box-shadow: none;
 }
 .stat-title {
   font-size: 14px;
-  color: #909399;
+  color: #8f9cb0;
   margin-bottom: 12px;
 }
 .stat-value {
   font-size: 32px;
   font-weight: 700;
   line-height: 1;
-  color: #333;
+  color: #f3f6fa;
 }
-.stat-value.stat-blue { color: #1890ff; }
-.stat-value.stat-green { color: #52c41a; }
-.stat-value.stat-red { color: #f5222d; }
-.stat-value.stat-orange { color: #fa8c16; }
+.stat-value.stat-blue { color: #4f96ff; }
+.stat-value.stat-green { color: #22b573; }
+.stat-value.stat-red { color: #f14d5c; }
+.stat-value.stat-orange { color: #ff9b31; }
 .stat-unit {
   font-size: 14px;
-  color: #999;
+  color: #7f8da2;
   font-weight: 400;
   margin-left: 2px;
 }
 .stat-sub {
   font-size: 12px;
-  color: #999;
+  color: #7f8da2;
   margin-top: 4px;
 }
 
 /* ===== Tabs ===== */
 .stat-tabs {
-  background: #fff;
+  background: #101b29;
   padding: 16px;
   border-radius: 4px;
-  border: 1px solid #ebeef5;
+  border: 1px solid #223044;
 }
 
 /* ===== 数字高亮 ===== */
@@ -698,16 +698,16 @@ loadAllPlayers()
 
 /* ===== 排行榜 ===== */
 .card {
-  background: #fff;
-  border: 1px solid #ebeef5;
+  background: #101b29;
+  border: 1px solid #223044;
   border-radius: 6px;
   padding: 20px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  box-shadow: none;
 }
 .card-title {
   font-size: 15px;
   font-weight: 600;
-  color: #333;
+  color: #e9eef6;
   margin-bottom: 16px;
   display: flex;
   align-items: center;
@@ -716,14 +716,14 @@ loadAllPlayers()
 .card-title-extra {
   font-size: 12px;
   font-weight: 400;
-  color: #999;
+  color: #7f8da2;
 }
 .ranking-list { }
 .ranking-item {
   display: flex;
   align-items: center;
   padding: 10px 0;
-  border-bottom: 1px solid #f5f5f5;
+  border-bottom: 1px solid rgba(145, 166, 195, 0.14);
 }
 .ranking-item:last-child { border-bottom: none; }
 .ranking-num {
@@ -736,8 +736,8 @@ loadAllPlayers()
   font-size: 13px;
   font-weight: 700;
   margin-right: 12px;
-  background: #f0f0f0;
-  color: #999;
+  background: #17263a;
+  color: #8f9cb0;
 }
 .ranking-num.top1 { background: linear-gradient(135deg, #FFD700, #FFA500); color: #fff; }
 .ranking-num.top2 { background: linear-gradient(135deg, #C0C0C0, #A0A0A0); color: #fff; }
@@ -746,7 +746,7 @@ loadAllPlayers()
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: #1a3a5c;
+  background: #2f7dff;
   color: #fff;
   display: flex;
   align-items: center;
@@ -756,19 +756,19 @@ loadAllPlayers()
   margin-right: 12px;
 }
 .ranking-info { flex: 1; }
-.ranking-name { font-size: 14px; font-weight: 600; color: #333; }
-.ranking-sub { font-size: 12px; color: #999; margin-top: 2px; }
+.ranking-name { font-size: 14px; font-weight: 600; color: #e9eef6; }
+.ranking-sub { font-size: 12px; color: #7f8da2; margin-top: 2px; }
 .ranking-value {
   font-size: 20px;
   font-weight: 700;
-  color: #1a3a5c;
+  color: #4f96ff;
   min-width: 40px;
   text-align: right;
 }
 .ranking-value small {
   font-size: 12px;
   font-weight: 400;
-  color: #999;
+  color: #7f8da2;
   margin-left: 2px;
 }
 
@@ -795,11 +795,11 @@ loadAllPlayers()
   margin: 0 auto 8px;
 }
 .compare-player-name { font-size: 16px; font-weight: 700; }
-.compare-player-sub { font-size: 12px; color: #999; }
+.compare-player-sub { font-size: 12px; color: #7f8da2; }
 .compare-vs {
   font-size: 24px;
   font-weight: 700;
-  color: #999;
+  color: #7f8da2;
 }
 .compare-bars { padding: 0 20px; }
 .compare-bar-row {
@@ -823,7 +823,7 @@ loadAllPlayers()
 .compare-label {
   width: 60px;
   text-align: center;
-  color: #666;
+  color: #8f9cb0;
   font-size: 12px;
 }
 .bar-fill-left {
@@ -843,10 +843,10 @@ loadAllPlayers()
 .compare-summary {
   margin-top: 24px;
   padding: 16px;
-  background: #f5f8fa;
+  background: #132238;
   border-radius: 6px;
   font-size: 13px;
-  color: #555;
+  color: #a9b4c5;
   line-height: 1.8;
 }
 
@@ -857,7 +857,7 @@ loadAllPlayers()
   align-items: center;
   gap: 12px;
   padding: 12px;
-  background: #f5f8fa;
+  background: #132238;
   border-radius: 6px;
   margin-bottom: 8px;
   border: 2px solid transparent;
@@ -865,7 +865,7 @@ loadAllPlayers()
   transition: all 0.2s;
 }
 .player-select-card:hover { border-color: #1890ff; }
-.player-select-card.selected { border-color: #1a3a5c; background: #e6f7ff; }
+.player-select-card.selected { border-color: #2f7dff; background: rgba(47, 125, 255, .14); }
 .psc-avatar {
   width: 44px;
   height: 44px;
@@ -880,7 +880,7 @@ loadAllPlayers()
 }
 .psc-info { flex: 1; }
 .psc-name { font-size: 14px; font-weight: 600; }
-.psc-sub { font-size: 12px; color: #999; margin-top: 2px; }
+.psc-sub { font-size: 12px; color: #7f8da2; margin-top: 2px; }
 .psc-goals { font-size: 18px; font-weight: 700; color: #d48806; }
 
 .detail-player-header {
@@ -888,7 +888,7 @@ loadAllPlayers()
   gap: 20px;
   margin-bottom: 20px;
   padding-bottom: 16px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid rgba(145, 166, 195, 0.14);
 }
 .detail-avatar {
   width: 72px;
@@ -906,7 +906,7 @@ loadAllPlayers()
 .detail-basic h3 { font-size: 18px; margin: 0 0 6px; }
 .detail-meta {
   font-size: 13px;
-  color: #666;
+  color: #8f9cb0;
   display: flex;
   gap: 16px;
 }
@@ -919,9 +919,9 @@ loadAllPlayers()
 .detail-stat-item {
   text-align: center;
   padding: 14px 8px;
-  background: #fafafa;
+  background: #132238;
   border-radius: 6px;
 }
-.detail-stat-item .num { font-size: 22px; font-weight: 700; color: #1a3a5c; }
-.detail-stat-item .lbl { font-size: 11px; color: #999; margin-top: 4px; }
+.detail-stat-item .num { font-size: 22px; font-weight: 700; color: #4f96ff; }
+.detail-stat-item .lbl { font-size: 11px; color: #7f8da2; margin-top: 4px; }
 </style>

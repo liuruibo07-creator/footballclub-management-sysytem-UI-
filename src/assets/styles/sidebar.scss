@@ -24,8 +24,9 @@
     left: 0;
     z-index: 1001;
     overflow: hidden;
-    -webkit-box-shadow: 2px 0 6px rgba(0,21,41,.35);
-    box-shadow: 2px 0 6px rgba(0,21,41,.35);
+    border-right: 1px solid rgba(126, 153, 190, 0.12);
+    -webkit-box-shadow: none;
+    box-shadow: none;
 
     // reset element-ui css
     .horizontal-collapse-transition {
@@ -46,7 +47,7 @@
 
     &.has-logo {
       .el-scrollbar {
-        height: calc(100% - 50px);
+        height: calc(100% - 104px);
       }
     }
 
@@ -61,30 +62,89 @@
     }
 
     .svg-icon {
-      margin-right: 16px;
+      margin-right: 8px;
+      color: #7f8da2;
+      font-size: 19px;
     }
 
     .el-menu {
       border: none;
       height: 100%;
       width: 100% !important;
+      padding: 18px 8px 28px;
+      background: transparent !important;
     }
 
-    .el-menu-item, .menu-title {
+    .el-menu-item,
+    .el-sub-menu__title {
+      height: 54px;
+      margin-bottom: 6px;
+      border-radius: 7px;
+      color: $base-menu-color !important;
+      font-size: 14px;
+      line-height: 54px;
+      transition: color .2s ease, background-color .2s ease;
+    }
+
+    .el-menu:not(.el-menu--collapse) > div > .el-menu-item,
+    .el-menu:not(.el-menu--collapse) > div > .el-sub-menu > .el-sub-menu__title {
+      padding-left: 16px !important;
+      padding-right: 28px !important;
+    }
+
+    .el-menu-item::before,
+    .el-sub-menu__title::before {
+      position: absolute;
+      top: 12px;
+      bottom: 12px;
+      left: -10px;
+      width: 3px;
+      border-radius: 0 3px 3px 0;
+      background: transparent;
+      content: "";
+    }
+
+    .el-menu-item.is-active {
+      background: linear-gradient(90deg, rgba(47, 125, 255, .24), rgba(47, 125, 255, .08)) !important;
+      color: #f5f8fc !important;
+      font-weight: 600;
+
+      &::before { background: #2f7dff; }
+      .svg-icon { color: #3f8cff; }
+    }
+
+    .el-menu-item {
       overflow: hidden !important;
       text-overflow: ellipsis !important;
       white-space: nowrap !important;
     }
 
+    .menu-title {
+      overflow: visible !important;
+      text-overflow: clip !important;
+      white-space: nowrap !important;
+    }
+
+    .el-menu-item .menu-title,
+    .el-sub-menu__title .menu-title {
+      flex: 1;
+      min-width: 0;
+    }
+
     .el-menu-item .el-menu-tooltip__trigger {
-      display: inline-block !important;
+      display: flex !important;
+      align-items: center;
+      width: 100%;
+      min-width: 0;
+      overflow: visible;
     }
 
     // menu hover
     .sub-menu-title-noDropdown,
     .el-sub-menu__title {
       &:hover {
-        background-color: rgba(0, 0, 0, 0.06) !important;
+        background-color: rgba(74, 112, 162, 0.13) !important;
+        color: #edf3fb !important;
       }
     }
 
@@ -94,11 +154,18 @@
 
     & .nest-menu .el-sub-menu>.el-sub-menu__title,
     & .el-sub-menu .el-menu-item {
-      min-width: $base-sidebar-width !important;
+      width: 100%;
+      min-width: 0 !important;
+      padding-left: 34px !important;
+      padding-right: 8px !important;
 
       &:hover {
-        background-color: rgba(0, 0, 0, 0.06) !important;
+        background-color: rgba(74, 112, 162, 0.13) !important;
       }
+    }
+
+    & .nest-menu .el-sub-menu>.el-sub-menu__title {
+      padding-right: 30px !important;
     }
 
     & .theme-dark .nest-menu .el-sub-menu>.el-sub-menu__title,
@@ -212,8 +279,17 @@
   .nest-menu .el-sub-menu>.el-sub-menu__title,
   .el-menu-item {
     &:hover {
-      // you can use $sub-menuHover
-      background-color: rgba(0, 0, 0, 0.06) !important;
+      background-color: #17263a !important;
+    }
+  }
+
+  > .el-menu--popup {
+    border: 1px solid #223044;
+    background: #0f1b2a;
+
+    .el-menu-item,
+    .el-sub-menu__title {
+      color: #9eabbd !important;
     }
   }
 

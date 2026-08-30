@@ -20,7 +20,7 @@ function getBreadcrumb() {
   const first = matched[0]
   // 判断是否为首页
   if (!isDashboard(first)) {
-    matched = [{ path: '/index', meta: { title: '首页' } }].concat(matched)
+    matched = [{ path: '/index', meta: { title: '工作台' } }].concat(matched)
   }
 
   levelList.value = matched.filter(item => item.meta && item.meta.title && item.meta.breadcrumb !== false)
@@ -55,11 +55,19 @@ getBreadcrumb();
 .app-breadcrumb.el-breadcrumb {
   display: inline-block;
   font-size: 14px;
-  line-height: 50px;
-  margin-left: 8px;
+  line-height: 72px;
+  margin-left: 10px;
+
+  :deep(.el-breadcrumb__inner),
+  :deep(.el-breadcrumb__separator) {
+    color: #718096;
+  }
+
+  :deep(.el-breadcrumb__inner a:hover) { color: #dfe7f2; }
 
   .no-redirect {
-    color: #97a8be;
+    color: #dfe7f2;
+    font-weight: 600;
     cursor: text;
   }
 }
