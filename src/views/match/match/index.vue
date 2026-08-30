@@ -48,12 +48,20 @@
           <div class="competition-name" v-if="match.competitionName">{{ match.competitionName }}</div>
         </div>
         <div class="teams-row">
-          <span class="team home">{{ match.homeTeam }}</span>
+          <div class="team home">
+            <img v-if="getTeamLogo(match.homeTeam)" :src="getTeamLogo(match.homeTeam)" class="team-logo" :alt="`${match.homeTeam}队徽`" />
+            <span v-else class="team-logo-fallback">{{ (match.homeTeam || '').slice(0, 2) }}</span>
+            <span class="team-name">{{ match.homeTeam }}</span>
+          </div>
           <span :class="match.status === 1 && match.homeScore != null && match.awayScore != null ? 'center-sep sep-score' : 'center-sep sep-vs'">
             <template v-if="match.status === 1 && match.homeScore != null && match.awayScore != null">{{ match.homeScore }} - {{ match.awayScore }}</template>
             <template v-else>vs</template>
           </span>
-          <span class="team away">{{ match.awayTeam }}</span>
+          <div class="team away">
+            <img v-if="getTeamLogo(match.awayTeam)" :src="getTeamLogo(match.awayTeam)" class="team-logo" :alt="`${match.awayTeam}队徽`" />
+            <span v-else class="team-logo-fallback">{{ (match.awayTeam || '').slice(0, 2) }}</span>
+            <span class="team-name">{{ match.awayTeam }}</span>
+          </div>
         </div>
         <div class="right-block">
           <div class="datetime">{{ parseTime(match.matchDate, '{y}-{m}-{d} {h}:{i}') }}</div>
@@ -146,6 +154,7 @@
 
 <script setup name="Match">
 import { listMatch, addMatch, updateMatch } from "@/api/match/match";
+import { listTeamLogo } from "@/api/match/teamLogo";
 
 const { proxy } = getCurrentInstance();
 const route = useRoute();
@@ -157,6 +166,26 @@ const loading = ref(true);
 const total = ref(0);
 const title = ref("");
 const activeTab = ref(route.query.status === "1" ? "1" : "all");
+
+// 队名 -> OSS队徽URL映射,由loadTeamLogos()从后端football_team_logo表加载
+const logoMap = ref({});
+
+/** 按队名取队徽URL,无则返回空串(模板走圆形兜底) */
+function getTeamLogo(teamName) {
+  return logoMap.value[teamName] || "";
+}
+
+/** 加载球队队徽映射(队名 -> OSS完整URL) */
+function loadTeamLogos() {
+  listTeamLogo().then(response => {
+    const map = {};
+    (response.data || []).forEach(item => {
+      if (item.logoUrl) map[item.teamName] = item.logoUrl;
+    });
+    logoMap.value = map;
+  }).catch(() => {});
+}
+loadTeamLogos();
 
 const data = reactive({
   form: {},
@@ -404,19 +433,57 @@ getList();
 
       .team {
         flex: 1;
-        font-size: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
         font-weight: 600;
         color: #dfe6ef;
         word-break: break-all;
 
         &.home {
-          text-align: right;
+          align-items: flex-end;
           padding-left: 12px;
+
+          .team-name {
+            text-align: right;
+          }
         }
 
         &.away {
-          text-align: left;
+          align-items: flex-start;
           padding-right: 12px;
+
+          .team-name {
+            text-align: left;
+          }
+        }
+
+        .team-logo {
+          width: 44px;
+          height: 44px;
+          border-radius: 50%;
+          object-fit: contain;
+          background: rgba(255, 255, 255, 0.06);
+          border: 1px solid rgba(255, 255, 255, 0.14);
+          padding: 3px;
+        }
+
+        .team-logo-fallback {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 44px;
+          height: 44px;
+          border-radius: 50%;
+          background: rgba(47, 125, 255, 0.18);
+          border: 1px solid rgba(120, 176, 255, 0.4);
+          color: #78b0ff;
+          font-size: 15px;
+          font-weight: 700;
+        }
+
+        .team-name {
+          font-size: 15px;
         }
       }
 
