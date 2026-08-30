@@ -325,7 +325,7 @@ getList();
   .page-header {
     font-size: 18px;
     font-weight: 600;
-    color: #303133;
+    color: #f3f6fa;
     margin-bottom: 14px;
   }
 
@@ -359,15 +359,17 @@ getList();
   .match-card {
     display: flex;
     align-items: center;
-    background: #fff;
-    border: 1px solid #e4e7ed;
-    border-radius: 6px;
+    background: #101b29;
+    border: 1px solid #223044;
+    border-radius: 7px;
     padding: 18px 16px;
     margin-bottom: 16px;
     transition: box-shadow 0.2s;
 
     &:hover {
-      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+      border-color: #30445f;
+      background: #132238;
+      box-shadow: 0 10px 26px rgba(1, 7, 15, 0.18);
     }
 
     .left-info {
@@ -378,8 +380,8 @@ getList();
       margin-right: 12px;
 
       .round-badge {
-        background: #f4f4f5;
-        color: #909399;
+        background: rgba(47, 125, 255, .12);
+        color: #78b0ff;
         padding: 4px 10px;
         border-radius: 4px;
         text-align: center;
@@ -389,7 +391,7 @@ getList();
 
       .competition-name {
         font-size: 13px;
-        color: #909399;
+        color: #7f8da2;
         white-space: nowrap;
       }
     }
@@ -404,7 +406,7 @@ getList();
         flex: 1;
         font-size: 15px;
         font-weight: 600;
-        color: #303133;
+        color: #dfe6ef;
         word-break: break-all;
 
         &.home {
@@ -426,11 +428,11 @@ getList();
       }
 
       .sep-vs {
-        color: #409eff;
+        color: #4f96ff;
       }
 
       .sep-score {
-        color: #303133;
+        color: #f3f6fa;
       }
     }
 
@@ -450,30 +452,30 @@ getList();
       }
 
       .scheduled {
-        background: #409eff;
+        background: #2f7dff;
       }
 
       .completed {
-        background: #67c23a;
+        background: #22b573;
       }
 
       .postponed {
-        background: #e6a23c;
+        background: #ff9b31;
       }
 
       .cancelled {
-        background: #909399;
+        background: #738095;
       }
 
       .datetime {
         font-size: 14px;
-        color: #303133;
+        color: #dfe6ef;
         font-weight: 600;
       }
 
       .venue {
         font-size: 13px;
-        color: #909399;
+        color: #7f8da2;
       }
     }
   }
@@ -486,7 +488,7 @@ getList();
 
     .total-text {
       font-size: 13px;
-      color: #606266;
+      color: #8f9cb0;
     }
   }
 }

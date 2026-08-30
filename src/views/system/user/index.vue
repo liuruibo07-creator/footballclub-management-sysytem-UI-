@@ -583,7 +583,7 @@ getList();
 <style scoped>
 .user-management-page {
   min-height: calc(100vh - 84px);
-  background: #f5f7fb;
+  background: var(--fc-bg);
 }
 
 .user-workspace {
@@ -593,10 +593,10 @@ getList();
 .dept-panel,
 .user-query-panel,
 .user-table-card {
-  background: #ffffff;
-  border: 1px solid #e7ebf2;
+  background: var(--fc-surface);
+  border: 1px solid var(--fc-border);
   border-radius: 10px;
-  box-shadow: 0 3px 12px rgba(31, 45, 61, 0.04);
+  box-shadow: none;
 }
 
 .dept-panel {
@@ -611,13 +611,13 @@ getList();
 
 .panel-heading h3 {
   margin: 0 0 5px;
-  color: #27364b;
+  color: var(--fc-text);
   font-size: 16px;
   font-weight: 600;
 }
 
 .panel-heading span {
-  color: #98a2b3;
+  color: var(--fc-text-muted);
   font-size: 12px;
 }
 
@@ -628,7 +628,7 @@ getList();
 .dept-tree-scroll {
   max-height: calc(100vh - 250px);
   overflow-y: auto;
-  border-top: 1px solid #f0f2f5;
+  border-top: 1px solid var(--fc-border-soft);
   padding-top: 12px;
 }
 
@@ -650,18 +650,19 @@ getList();
 .user-toolbar {
   margin: 0;
   padding: 14px 16px;
-  border-bottom: 1px solid #edf0f5;
+  border-bottom: 1px solid var(--fc-border-soft);
 }
 
 :deep(.dept-search .el-input__wrapper),
 :deep(.user-query-panel .el-input__wrapper),
 :deep(.user-query-panel .el-select__wrapper),
 :deep(.user-query-panel .el-date-editor) {
-  box-shadow: 0 0 0 1px #dfe4ec inset;
+  background: #0c1725;
+  box-shadow: 0 0 0 1px var(--fc-border) inset;
 }
 
 :deep(.dept-tree) {
-  color: #475467;
+  color: var(--fc-text-secondary);
   background: transparent;
 }
 
@@ -672,14 +673,14 @@ getList();
 }
 
 :deep(.dept-tree .el-tree-node__content:hover) {
-  color: #337ecc;
-  background: #f4f8ff;
+  color: #71aaff;
+  background: var(--fc-primary-soft);
 }
 
 :deep(.dept-tree .el-tree-node.is-current > .el-tree-node__content) {
-  color: #2478d4;
+  color: #7bb2ff;
   font-weight: 500;
-  background: #eaf3ff;
+  background: rgba(47, 125, 255, .2);
 }
 
 :deep(.user-query-panel .el-form-item) {
@@ -688,7 +689,7 @@ getList();
 }
 
 :deep(.user-query-panel .el-form-item__label) {
-  color: #475467;
+  color: var(--fc-text-secondary);
   font-weight: 600;
 }
 
@@ -696,21 +697,58 @@ getList();
   border-radius: 6px;
 }
 
+:deep(.user-query-panel .el-button--primary) {
+  --el-button-bg-color: var(--fc-primary);
+  --el-button-border-color: var(--fc-primary);
+  --el-button-hover-bg-color: #4b90ff;
+  --el-button-hover-border-color: #4b90ff;
+}
+
+:deep(.user-toolbar .el-button.is-plain) {
+  background: #132238 !important;
+}
+
+:deep(.user-toolbar .el-button--primary.is-plain) {
+  border-color: rgba(47, 125, 255, .62) !important;
+  color: #6ba8ff !important;
+}
+
+:deep(.user-toolbar .el-button--success.is-plain) {
+  border-color: rgba(34, 181, 115, .55) !important;
+  color: #49d293 !important;
+}
+
+:deep(.user-toolbar .el-button--danger.is-plain) {
+  border-color: rgba(241, 77, 92, .55) !important;
+  color: #ff7b88 !important;
+}
+
+:deep(.user-toolbar .el-button--warning.is-plain) {
+  border-color: rgba(255, 155, 49, .55) !important;
+  color: #ffb15e !important;
+}
+
+:deep(.user-toolbar .el-button--info.is-plain) {
+  border-color: rgba(115, 128, 149, .58) !important;
+  color: #b7c2d2 !important;
+}
+
 :deep(.user-table .el-table__header-wrapper th.el-table__cell),
 :deep(.user-table .el-table__fixed-header-wrapper th.el-table__cell) {
   height: 48px !important;
-  color: #344054;
+  color: #dfe6ef;
   font-weight: 600;
-  background: #f7f9fc !important;
+  background: var(--fc-surface-raised) !important;
 }
 
 :deep(.user-table .el-table__row td.el-table__cell) {
   height: 52px;
-  color: #475467;
+  color: var(--fc-text-secondary);
+  background: var(--fc-surface) !important;
 }
 
 :deep(.user-table .el-table__body tr:hover > td.el-table__cell) {
-  background: #eef6ff !important;
+  background: #16263a !important;
 }
 
 :deep(.user-table .el-button.is-link) {
@@ -721,7 +759,7 @@ getList();
 }
 
 :deep(.user-table .el-button.is-link:hover) {
-  background: #eaf3ff;
+  background: var(--fc-primary-soft);
 }
 
 :deep(.user-table-card .pagination-container) {
@@ -733,7 +771,7 @@ getList();
   box-sizing: border-box;
   margin: 0;
   padding: 14px 16px !important;
-  border-top: 1px solid #edf0f5;
+  border-top: 1px solid var(--fc-border-soft);
 }
 
 :deep(.user-table-card .pagination-container .el-pagination) {

@@ -6,7 +6,6 @@
 
     <div class="right-menu">
       <template v-if="appStore.device !== 'mobile'">
-        <header-search id="header-search" class="right-menu-item" />
 <!-- 
         <el-tooltip content="源码地址" effect="dark" placement="bottom">
           <ruo-yi-git id="ruoyi-git" class="right-menu-item hover-effect" />
@@ -54,7 +53,6 @@ import TopNav from '@/components/TopNav'
 import Hamburger from '@/components/Hamburger'
 import Screenfull from '@/components/Screenfull'
 import SizeSelect from '@/components/SizeSelect'
-import HeaderSearch from '@/components/HeaderSearch'
 import RuoYiGit from '@/components/RuoYi/Git'
 import RuoYiDoc from '@/components/RuoYi/Doc'
 import useAppStore from '@/store/modules/app'
@@ -102,14 +100,17 @@ function setLayout() {
 
 <style lang='scss' scoped>
 .navbar {
-  height: 50px;
+  height: 72px;
   overflow: hidden;
   position: relative;
-  background: #fff;
-  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+  border-bottom: 1px solid rgba(126, 153, 190, 0.12);
+  background: #0b1523;
+  box-shadow: none;
 
   .hamburger-container {
-    line-height: 46px;
+    display: flex;
+    align-items: center;
+    line-height: 68px;
     height: 100%;
     float: left;
     cursor: pointer;
@@ -117,8 +118,10 @@ function setLayout() {
     -webkit-tap-highlight-color: transparent;
 
     &:hover {
-      background: rgba(0, 0, 0, 0.025);
+      background: rgba(47, 125, 255, 0.08);
     }
+
+    :deep(.hamburger) { fill: #8f9cb0; }
   }
 
   .breadcrumb-container {
@@ -138,50 +141,68 @@ function setLayout() {
   .right-menu {
     float: right;
     height: 100%;
-    line-height: 50px;
+    align-items: center;
+    line-height: 72px;
     display: flex;
+    gap: 2px;
+    padding-left: 8px;
+    border-left: 1px solid rgba(126, 153, 190, 0.12);
 
     &:focus {
       outline: none;
     }
 
     .right-menu-item {
-      display: inline-block;
-      padding: 0 8px;
-      height: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      width: 42px;
+      height: 42px;
       font-size: 18px;
-      color: #5a5e66;
+      color: #8f9cb0;
       vertical-align: text-bottom;
 
       &.hover-effect {
         cursor: pointer;
+        border-radius: 7px;
         transition: background 0.3s;
 
         &:hover {
-          background: rgba(0, 0, 0, 0.025);
+          background: rgba(47, 125, 255, 0.08);
+          color: #e6edf7;
         }
       }
     }
 
     .avatar-container {
-      margin-right: 40px;
+      display: flex;
+      align-items: center;
+      height: 100%;
+      margin: 0 26px 0 8px;
 
       .avatar-wrapper {
-        margin-top: 5px;
+        display: flex;
+        align-items: center;
+        height: 46px;
+        margin-top: 0;
         position: relative;
 
         .user-avatar {
           cursor: pointer;
-          width: 40px;
-          height: 40px;
-          border-radius: 10px;
+          width: 42px;
+          height: 42px;
+          border: 2px solid rgba(148, 165, 190, .24);
+          border-radius: 50%;
+          object-fit: cover;
         }
 
         i {
           cursor: pointer;
           position: absolute;
-          right: -20px;
-          top: 25px;
+          right: -18px;
+          top: 17px;
+          color: #8f9cb0;
           font-size: 12px;
         }
       }

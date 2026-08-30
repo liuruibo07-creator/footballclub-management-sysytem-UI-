@@ -9,17 +9,17 @@ $yellow: #FEC171;
 $panGreen: #30B08F;
 
 // 默认菜单主题风格
-$base-menu-color: #303133;
-$base-menu-color-active: #409EFF;
-$base-menu-background: #cdeaf8;
-$base-logo-title-color: #303133;
+$base-menu-color: #8f9cb0;
+$base-menu-color-active: #f5f8fc;
+$base-menu-background: #091321;
+$base-logo-title-color: #f5f8fc;
 
 $base-menu-light-color: rgba(0, 0, 0, 0.7);
 $base-menu-light-background: #ffffff;
 $base-logo-light-title-color: #001529;
 
-$base-sub-menu-background: #b0d7ef;
-$base-sub-menu-hover: #9cc9e4;
+$base-sub-menu-background: #0b1727;
+$base-sub-menu-hover: #13243a;
 
 // 自定义暗色菜单风格
 /**
@@ -36,13 +36,13 @@ $base-sub-menu-background:#000c17;
 $base-sub-menu-hover:#001528;
 */
 
-$--color-primary: #409EFF;
-$--color-success: #67C23A;
-$--color-warning: #E6A23C;
-$--color-danger: #F56C6C;
-$--color-info: #909399;
+$--color-primary: #2f7dff;
+$--color-success: #22b573;
+$--color-warning: #ff9b31;
+$--color-danger: #f14d5c;
+$--color-info: #738095;
 
-$base-sidebar-width: 200px;
+$base-sidebar-width: 196px;
 
 // the :export directive is the magic sauce for webpack
 // https://www.bluematador.com/blog/how-to-share-variables-between-js-and-sass

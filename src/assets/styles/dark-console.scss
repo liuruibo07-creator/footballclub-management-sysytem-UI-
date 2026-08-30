@@ -1,0 +1,256 @@
+:root {
+  --fc-bg: #08111f;
+  --fc-sidebar: #091321;
+  --fc-surface: #101b29;
+  --fc-surface-raised: #142131;
+  --fc-border: #223044;
+  --fc-border-soft: rgba(145, 166, 195, 0.14);
+  --fc-text: #f3f6fa;
+  --fc-text-secondary: #a9b4c5;
+  --fc-text-muted: #738095;
+  --fc-primary: #2f7dff;
+  --fc-primary-soft: rgba(47, 125, 255, 0.14);
+  --fc-success: #22b573;
+  --fc-warning: #ff9b31;
+  --fc-danger: #f14d5c;
+  --el-color-primary: #2f7dff;
+  --el-color-success: #22b573;
+  --el-color-warning: #ff9b31;
+  --el-color-danger: #f14d5c;
+  --el-bg-color: #101b29;
+  --el-bg-color-overlay: #142131;
+  --el-fill-color-blank: #101b29;
+  --el-fill-color-light: #162334;
+  --el-fill-color-lighter: #182638;
+  --el-fill-color-extra-light: #1b293a;
+  --el-fill-color-dark: #0d1724;
+  --el-border-color: #27364a;
+  --el-border-color-light: #223044;
+  --el-border-color-lighter: #1d2a3b;
+  --el-border-color-extra-light: #192536;
+  --el-text-color-primary: #f3f6fa;
+  --el-text-color-regular: #c3ccd9;
+  --el-text-color-secondary: #8f9cb0;
+  --el-text-color-placeholder: #647187;
+  --el-mask-color: rgba(2, 8, 16, 0.7);
+}
+
+html,
+body,
+#app {
+  background: var(--fc-bg);
+}
+
+#app .main-container,
+#app .app-main {
+  background: var(--fc-bg);
+}
+
+.app-container {
+  min-height: calc(100vh - 106px);
+  background: var(--fc-bg);
+  color: var(--fc-text-secondary);
+}
+
+.app-container > .el-form,
+.app-container > .el-row,
+.app-container > .el-card,
+.app-container > .el-table {
+  color: var(--fc-text-secondary);
+}
+
+.el-card,
+.el-dialog,
+.el-drawer,
+.el-message-box,
+.el-popover.el-popper,
+.el-dropdown-menu,
+.el-picker-panel,
+.el-select__popper,
+.el-tree,
+.tree-border {
+  border-color: var(--fc-border) !important;
+  background: var(--fc-surface) !important;
+  color: var(--fc-text-secondary) !important;
+}
+
+.el-card {
+  box-shadow: none !important;
+}
+
+.el-card__header,
+.el-dialog__header,
+.el-drawer__header {
+  border-color: var(--fc-border-soft) !important;
+  color: var(--fc-text) !important;
+}
+
+.el-input__wrapper,
+.el-textarea__inner,
+.el-select__wrapper,
+.el-date-editor.el-input__wrapper,
+.el-range-editor.el-input__wrapper {
+  background: #0c1725 !important;
+  box-shadow: 0 0 0 1px var(--fc-border) inset !important;
+}
+
+.el-input__wrapper:hover,
+.el-textarea__inner:hover,
+.el-select__wrapper:hover {
+  box-shadow: 0 0 0 1px #38516f inset !important;
+}
+
+.el-input__inner,
+.el-textarea__inner,
+.el-range-input,
+.el-select__selected-item {
+  color: var(--fc-text-secondary) !important;
+}
+
+.el-table,
+.el-table tr,
+.el-table th.el-table__cell,
+.el-table td.el-table__cell {
+  background: var(--fc-surface) !important;
+  color: var(--fc-text-secondary) !important;
+  border-color: var(--fc-border-soft) !important;
+}
+
+.el-table th.el-table__cell {
+  background: #142131 !important;
+  color: #dfe6ef !important;
+}
+
+.el-table--enable-row-hover .el-table__body tr:hover > td.el-table__cell {
+  background: #16263a !important;
+}
+
+.el-table__inner-wrapper::before,
+.el-table--border::after,
+.el-table--border::before,
+.el-table__border-left-patch {
+  background: var(--fc-border) !important;
+}
+
+.el-pagination,
+.el-pagination button,
+.el-pager li {
+  color: var(--fc-text-secondary) !important;
+  background: transparent !important;
+}
+
+.el-pagination .is-active {
+  color: #fff !important;
+  background: var(--fc-primary) !important;
+}
+
+.el-form-item__label,
+.el-checkbox__label,
+.el-radio__label {
+  color: var(--fc-text-secondary) !important;
+}
+
+.el-button:not(.el-button--primary):not(.el-button--success):not(.el-button--warning):not(.el-button--danger) {
+  border-color: #304159;
+  background: #142131;
+  color: #cbd4e0;
+}
+
+.el-button:not(.el-button--primary):hover {
+  border-color: #3d5c84;
+  background: #192a3f;
+  color: #fff;
+}
+
+.el-button--primary {
+  --el-button-bg-color: var(--fc-primary);
+  --el-button-border-color: var(--fc-primary);
+  --el-button-hover-bg-color: #4b90ff;
+  --el-button-hover-border-color: #4b90ff;
+  --el-button-active-bg-color: #256de3;
+  --el-button-active-border-color: #256de3;
+}
+
+.el-button--primary.is-plain,
+.el-button--success.is-plain,
+.el-button--warning.is-plain,
+.el-button--danger.is-plain {
+  background: #132238 !important;
+}
+
+.el-button--primary.is-plain {
+  border-color: rgba(47, 125, 255, .58) !important;
+  color: #68a4ff !important;
+}
+
+.el-button--success.is-plain {
+  border-color: rgba(34, 181, 115, .5) !important;
+  color: #45ce91 !important;
+}
+
+.el-button--warning.is-plain {
+  border-color: rgba(255, 155, 49, .5) !important;
+  color: #ffad57 !important;
+}
+
+.el-button--danger.is-plain {
+  border-color: rgba(241, 77, 92, .5) !important;
+  color: #ff7682 !important;
+}
+
+.el-button.is-link {
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.el-button--primary.is-link { color: #55a0ff !important; }
+.el-button--danger.is-link { color: #ff6876 !important; }
+.el-button--success.is-link { color: #3ed18e !important; }
+.el-button--warning.is-link { color: #ffad57 !important; }
+
+.el-tabs__item { color: var(--fc-text-secondary) !important; }
+.el-tabs__item.is-active,
+.el-tabs__item:hover { color: #66a7ff !important; }
+.el-tabs__active-bar { background: var(--fc-primary) !important; }
+.el-tabs__nav-wrap::after { background: var(--fc-border-soft) !important; }
+
+.el-tag {
+  border-color: rgba(88, 154, 255, .36) !important;
+  background: rgba(47, 125, 255, .12) !important;
+  color: #78b0ff !important;
+}
+
+.el-row.mb8 { align-items: center; }
+
+.top-right-btn .el-row {
+  align-items: center;
+  gap: 8px;
+}
+
+.top-right-btn .el-button + .el-button { margin-left: 0; }
+
+.el-loading-mask {
+  background: rgba(8, 17, 31, 0.78) !important;
+}
+
+.el-empty__description p,
+.el-descriptions__label,
+.el-descriptions__content {
+  color: var(--fc-text-secondary) !important;
+}
+
+.el-overlay {
+  background: rgba(2, 8, 16, 0.72) !important;
+}
+
+::-webkit-scrollbar-track {
+  background: #08111f !important;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2a3a50 !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3b4f6b !important;
+}

@@ -1,7 +1,6 @@
 <template>
   <main class="match-home">
     <section class="match-hero" aria-labelledby="next-match-title" v-loading="nextMatchLoading">
-      <div class="hero-shade" />
       <div class="hero-heading">
         <span id="next-match-title">下一场比赛</span>
       </div>
@@ -26,12 +25,11 @@
       </div>
 
       <div v-else-if="!nextMatchLoading" class="next-match-empty">暂无待进行比赛</div>
-
     </section>
 
     <div class="dashboard-grid">
       <section class="panel season-panel" aria-labelledby="season-title" v-loading="seasonLoading">
-        <header class="panel-header"><h2 id="season-title">赛季概览</h2></header>
+        <header class="panel-header"><h2 id="season-title">赛季表现</h2></header>
         <div class="season-stats">
           <div class="stat-item">
             <span>联赛排名</span>
@@ -46,32 +44,71 @@
             <strong><em>{{ seasonOverview.wins }}</em>胜 <em>{{ seasonOverview.draws }}</em>平 <em>{{ seasonOverview.losses }}</em>负</strong>
           </div>
         </div>
-        <div class="recent-block">
-          <h3>近期状态</h3>
-          <div v-if="recentMatches.length > 0" class="form-list">
-            <div v-for="match in recentMatches" :key="`${match.roundNo}-${match.matchDate}`" class="form-item">
-              <span class="result-chip" :class="getResultTone(match.result)">{{ getResultLabel(match.result) }}</span>
-              <strong>{{ match.teamScore }}-{{ match.opponentScore }}</strong>
-              <small>第{{ match.roundNo }}轮</small>
-            </div>
-          </div>
-          <div v-else-if="!seasonLoading" class="season-empty">暂无已完成比赛</div>
+        <div class="season-summary">
+          <span>本赛季数据概览</span>
+          <strong>{{ seasonOverview.points }}<small> 当前积分</small></strong>
         </div>
         <button class="text-link season-link" type="button" @click="viewAllMatches">
-          查看全部 <el-icon><Right /></el-icon>
+          查看全部比赛 <el-icon><Right /></el-icon>
         </button>
       </section>
 
+      <section class="panel recent-panel" aria-labelledby="recent-title" v-loading="seasonLoading">
+        <header class="panel-header"><h2 id="recent-title">近期状态</h2></header>
+        <div v-if="recentMatches.length > 0" class="form-list">
+          <div v-for="match in recentMatches" :key="`${match.roundNo}-${match.matchDate}`" class="form-item">
+            <span class="result-chip" :class="getResultTone(match.result)">{{ getResultLabel(match.result) }}</span>
+            <strong>{{ match.teamScore }}-{{ match.opponentScore }}</strong>
+            <small>第{{ match.roundNo }}轮</small>
+          </div>
+        </div>
+        <div v-else-if="!seasonLoading" class="season-empty">暂无已完成比赛</div>
+      </section>
+
+      <article class="panel overview-card health-card">
+        <header class="panel-header"><h2>球队状态</h2></header>
+        <div class="health-stats">
+          <div v-for="item in teamHealthStats" :key="item.label" class="health-stat" :class="item.tone">
+            <span class="health-dot" aria-hidden="true" />
+            <span>{{ item.label }}</span>
+            <strong>{{ item.value }}<small> 人</small></strong>
+          </div>
+        </div>
+        <button class="card-link" type="button" @click="viewInjuries">
+          查看伤病情况 <el-icon><Right /></el-icon>
+        </button>
+      </article>
+
+      <article class="panel overview-card training-card" v-loading="trainingLoading">
+        <header class="panel-header">
+          <h2>今日训练</h2>
+          <span class="sample-badge" v-if="todayTrainings.length">{{ todayTrainings.length }} 项</span>
+          <span class="sample-badge" v-else>暂无安排</span>
+        </header>
+        <template v-if="todayTrainings.length">
+          <div v-for="item in todayTrainings" :key="item.id" class="training-item">
+            <strong class="training-subject">{{ item.title }}</strong>
+            <div class="training-meta">
+              <span><el-icon><Clock /></el-icon>{{ formatTrainingTime(item.startTime) }}—{{ formatTrainingTime(item.endTime) }}</span>
+              <span v-if="item.venue"><el-icon><OfficeBuilding /></el-icon>{{ item.venue }}</span>
+            </div>
+          </div>
+        </template>
+        <template v-else>
+          <div class="panel-empty">今日暂无训练安排</div>
+        </template>
+        <button class="card-link" type="button" @click="viewTraining">
+          查看训练计划 <el-icon><Right /></el-icon>
+        </button>
+      </article>
+
       <section class="panel todo-panel" aria-labelledby="todo-title">
-        <header class="panel-header"><h2 id="todo-title">待处理事项</h2></header>
+        <header class="panel-header">
+          <h2 id="todo-title">待办日程</h2>
+          <span v-if="pendingTotal > 0" class="count-badge warning">{{ pendingTotal }}</span>
+        </header>
         <div class="todo-section schedule-todo-section" v-loading="pendingLoading">
-          <div class="todo-heading">
-            <h3>待办日程</h3>
-            <span v-if="pendingTotal > 0" class="count-badge danger">{{ pendingTotal }}</span>
-          </div>
-          <div v-if="!pendingLoading && pendingSchedules.length === 0" class="todo-empty">
-            暂无已安排的日程
-          </div>
+          <div v-if="!pendingLoading && pendingSchedules.length === 0" class="todo-empty">暂无已安排的日程</div>
           <ul v-else>
             <li v-for="item in pendingSchedules" :key="item.id" class="schedule-todo-item">
               <el-icon class="status-icon"><Calendar /></el-icon>
@@ -80,66 +117,17 @@
                 <span>{{ getScheduleType(item.eventType) }} · {{ item.location || '地点待定' }}</span>
               </div>
               <div class="item-side">
-                <span>{{ formatScheduleTime(item.startTime) }}</span>
-                <small>已安排</small>
+                <small>{{ formatScheduleTime(item.startTime) }}</small>
+                <span>已安排</span>
               </div>
             </li>
           </ul>
           <div class="todo-summary-row">
-            <div v-if="pendingRemaining > 0" class="remaining-tip">
-              还有 <strong>{{ pendingRemaining }}</strong> 条待办日程
-            </div>
+            <div v-if="pendingRemaining > 0" class="remaining-tip">还有 <strong>{{ pendingRemaining }}</strong> 条待办日程</div>
             <button class="text-link todo-link" type="button" @click="viewAllSchedules">
-              查看全部 <el-icon><Right /></el-icon>
+              查看全部日程 <el-icon><Right /></el-icon>
             </button>
           </div>
-        </div>
-
-        <div class="team-overview-grid" aria-label="今日训练与球队状态">
-          <article class="overview-card training-card" v-loading="trainingLoading">
-            <div class="overview-card-header">
-              <div>
-                <span class="overview-kicker">TODAY</span>
-                <h3>今日训练</h3>
-              </div>
-              <span class="sample-badge" v-if="todayTrainings.length">{{ todayTrainings.length }} 项训练</span>
-              <span class="sample-badge" v-else>暂无安排</span>
-            </div>
-            <template v-if="todayTrainings.length">
-              <div v-for="item in todayTrainings" :key="item.id" style="margin-bottom: 10px;">
-                <strong class="training-subject">{{ item.title }}</strong>
-                <div class="training-meta">
-                  <span><el-icon><Clock /></el-icon>{{ formatTrainingTime(item.startTime) }}—{{ formatTrainingTime(item.endTime) }}</span>
-                  <span v-if="item.venue"><el-icon><OfficeBuilding /></el-icon>{{ item.venue }}</span>
-                </div>
-              </div>
-            </template>
-            <template v-else>
-              <strong class="training-subject" style="color: #909399;">今日暂无训练安排</strong>
-            </template>
-            <button class="card-link" type="button" @click="viewTraining">
-              查看训练计划 <el-icon><Right /></el-icon>
-            </button>
-          </article>
-
-          <article class="overview-card health-card">
-            <div class="overview-card-header">
-              <div>
-                <span class="overview-kicker">TEAM</span>
-                <h3>球队状态</h3>
-              </div>
-
-            </div>
-            <div class="health-stats">
-              <div v-for="item in teamHealthStats" :key="item.label" class="health-stat" :class="item.tone">
-                <strong>{{ item.value }}</strong>
-                <span>{{ item.label }}</span>
-              </div>
-            </div>
-            <button class="card-link" type="button" @click="viewInjuries">
-              查看伤病情况 <el-icon><Right /></el-icon>
-            </button>
-          </article>
         </div>
       </section>
     </div>
@@ -812,5 +800,369 @@ function showMessage(target) {
   .item-side,
   .schedule-todo-item time { grid-column: 2; margin-top: 7px; }
   .health-stats { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+
+<style lang="scss" scoped>
+.match-home {
+  --surface: #101b29;
+  --surface-raised: #142131;
+  --border: #223044;
+  --border-soft: rgba(145, 166, 195, .14);
+  --text: #f3f6fa;
+  --text-secondary: #a9b4c5;
+  --muted: #738095;
+  --primary: #2f7dff;
+  --success: #22b573;
+  --warning: #ff9b31;
+  --danger: #f14d5c;
+  min-height: calc(100vh - 106px);
+  padding: 18px 20px 26px;
+  background: #08111f;
+  color: var(--text);
+}
+
+.match-hero {
+  height: 194px;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: none;
+}
+
+.hero-shade { display: none; }
+
+.hero-heading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  display: block;
+  padding: 18px 22px;
+  color: #e8eef7;
+  font-size: 17px;
+}
+
+.match-stage {
+  grid-template-columns: minmax(190px, 1fr) 250px minmax(190px, 1fr);
+  width: min(850px, 78%);
+  height: 100%;
+  margin: 0 auto;
+}
+
+.team { gap: 9px; }
+
+.team img {
+  width: 82px;
+  height: 82px;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, .3));
+}
+
+.team strong {
+  color: var(--text);
+  font-size: 20px;
+  text-shadow: none;
+}
+
+.team-logo-fallback {
+  width: 82px;
+  height: 82px;
+  border-color: #52647c;
+  background: #17283e;
+  box-shadow: none;
+}
+
+.match-meta {
+  gap: 8px;
+  color: var(--text-secondary);
+}
+
+.match-meta > strong {
+  margin-bottom: 2px;
+  color: #e7edf6;
+  font-size: 17px;
+}
+
+.match-meta b {
+  margin: 0;
+  color: #f8fafc;
+  font-size: 35px;
+  font-weight: 700;
+}
+
+.match-meta span {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.next-match-empty {
+  height: 100%;
+  color: var(--text-secondary);
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.panel {
+  min-height: 0;
+  padding: 0 20px 18px;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: none;
+  color: var(--text-secondary);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 48px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.panel-header h2 {
+  padding: 0;
+  color: var(--text);
+  font-size: 17px;
+  font-weight: 650;
+  line-height: 48px;
+}
+
+.season-panel {
+  grid-column: span 8;
+  min-height: 306px;
+}
+
+.recent-panel {
+  grid-column: span 4;
+  min-height: 306px;
+}
+
+.season-stats {
+  grid-template-columns: 1fr .82fr 1.45fr;
+  padding: 25px 0 22px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.stat-item {
+  min-height: 67px;
+  padding: 0 20px;
+  border-color: var(--border);
+}
+
+.stat-item:first-child { padding-left: 8px; }
+.stat-item span { color: var(--text-secondary); font-size: 13px; }
+.stat-item strong { color: #3f86ff; font-size: 34px; font-variant-numeric: tabular-nums; }
+.stat-item small { color: #8794a8; font-size: 14px; }
+.record-stat strong { color: var(--text-secondary); font-size: 17px; }
+.record-stat strong em { color: #3f86ff; font-size: 29px; }
+.record-stat strong em:last-of-type { color: var(--danger); }
+
+.season-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 92px;
+  margin-top: 17px;
+  padding: 0 18px;
+  border: 1px solid rgba(58, 104, 167, .2);
+  border-radius: 6px;
+  background: #0d1826;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.season-summary strong {
+  color: #3f86ff;
+  font-size: 30px;
+  font-variant-numeric: tabular-nums;
+}
+
+.season-summary small { color: var(--text-secondary); font-size: 12px; font-weight: 400; }
+
+.season-link { right: 20px; bottom: 15px; }
+
+.recent-panel .form-list {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  height: calc(100% - 48px);
+  padding-top: 48px;
+}
+
+.form-item { gap: 10px; }
+.form-item strong { color: var(--text); font-size: 17px; font-variant-numeric: tabular-nums; }
+.form-item small { color: var(--muted); font-size: 11px; }
+
+.result-chip {
+  width: 38px;
+  height: 38px;
+  border-radius: 6px;
+  font-size: 16px;
+}
+
+.result-chip.win { background: rgba(34, 181, 115, .18); color: #46d495; }
+.result-chip.draw { background: rgba(115, 128, 149, .24); color: #bdc6d2; }
+.result-chip.loss { background: rgba(241, 77, 92, .19); color: #ff6876; }
+
+.season-empty,
+.panel-empty,
+.todo-empty {
+  color: var(--muted);
+}
+
+.overview-card {
+  min-height: 248px;
+  padding: 0 20px 50px;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.health-card { grid-column: span 3; }
+.training-card { grid-column: span 4; }
+.todo-panel { grid-column: span 5; min-height: 248px; }
+
+.health-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 7px;
+}
+
+.health-stat {
+  display: grid;
+  grid-template-columns: 10px 1fr auto;
+  min-height: 39px;
+  padding: 0;
+  border-bottom: 1px solid var(--border-soft);
+  border-radius: 0;
+  background: transparent !important;
+  color: var(--text-secondary);
+}
+
+.health-stat > span:not(.health-dot) { font-size: 13px; }
+.health-stat strong { color: var(--text); font-size: 17px; font-variant-numeric: tabular-nums; }
+.health-stat strong small { color: var(--muted); font-size: 11px; font-weight: 400; }
+
+.health-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #718096;
+}
+
+.health-stat.normal .health-dot { background: var(--success); }
+.health-stat.injured .health-dot { background: var(--danger); }
+.health-stat.recovering .health-dot { background: var(--warning); }
+.health-stat.absent .health-dot { background: #ef596b; }
+
+.sample-badge {
+  border: 1px solid rgba(47, 125, 255, .2);
+  background: rgba(47, 125, 255, .1);
+  color: #68a1ff;
+  font-size: 10px;
+}
+
+.training-item {
+  padding: 13px 2px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.training-subject {
+  margin: 0 0 7px;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.training-meta { color: var(--muted); font-size: 11px; }
+.panel-empty { display: flex; align-items: center; justify-content: center; min-height: 120px; font-size: 13px; }
+
+.count-badge {
+  width: 21px;
+  height: 21px;
+  font-size: 11px;
+}
+
+.count-badge.warning { background: var(--warning); }
+
+.schedule-todo-section { min-height: 0; }
+.todo-section ul { max-height: 142px; overflow: hidden; }
+
+.todo-section li {
+  grid-template-columns: 25px minmax(120px, 1fr) auto;
+  min-height: 66px;
+  border-color: var(--border-soft);
+}
+
+.status-icon { color: var(--warning); font-size: 19px; }
+.item-main strong { color: var(--text); font-size: 13px; }
+.item-main span { color: var(--muted); font-size: 11px; }
+.item-side { align-items: flex-end; }
+.item-side small { color: var(--warning); font-size: 11px; }
+.item-side span { color: var(--muted); font-size: 10px; }
+
+.todo-summary-row {
+  min-height: 39px;
+  padding: 7px 0 0;
+}
+
+.remaining-tip { color: var(--muted); }
+.remaining-tip strong { color: #5b95f7; }
+
+.text-link,
+.card-link {
+  color: #4087ff;
+}
+
+.text-link:hover,
+.card-link:hover { color: #6ca3ff; }
+
+.card-link {
+  right: 18px;
+  bottom: 16px;
+  font-size: 11px;
+}
+
+@media (max-width: 1280px) {
+  .match-stage { width: 82%; }
+  .season-panel { grid-column: span 7; }
+  .recent-panel { grid-column: span 5; }
+  .health-card { grid-column: span 4; }
+  .training-card { grid-column: span 4; }
+  .todo-panel { grid-column: span 4; }
+  .todo-section li { grid-template-columns: 24px 1fr; padding: 8px 0; }
+  .item-side { grid-column: 2; align-items: flex-start; }
+}
+
+@media (max-width: 980px) {
+  .match-home { padding: 14px; }
+  .match-stage { grid-template-columns: 1fr 190px 1fr; width: 94%; }
+  .season-panel,
+  .recent-panel { grid-column: span 12; }
+  .health-card,
+  .training-card,
+  .todo-panel { grid-column: span 6; }
+}
+
+@media (max-width: 700px) {
+  .match-hero { height: 300px; }
+  .match-stage { grid-template-columns: 1fr 100px 1fr; padding-top: 34px; }
+  .team img,
+  .team-logo-fallback { width: 62px; height: 62px; }
+  .team strong { font-size: 14px; }
+  .match-meta > strong { font-size: 13px; }
+  .match-meta b { font-size: 28px; }
+  .match-meta span { font-size: 10px; }
+  .health-card,
+  .training-card,
+  .todo-panel { grid-column: span 12; }
+  .season-stats { grid-template-columns: 1fr 1fr; }
+  .record-stat { grid-column: 1 / -1; margin-top: 18px; border-right: 0; }
 }
 </style>

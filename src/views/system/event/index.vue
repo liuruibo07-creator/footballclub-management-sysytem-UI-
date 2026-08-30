@@ -442,17 +442,18 @@ getList();
 }
 .schedule-tabs :deep(.el-tabs__item.is-active) {
   font-weight: 600;
-  color: #1a3a5c;
+  color: #66a7ff;
 }
 .schedule-tabs :deep(.el-tabs__active-bar) {
-  background-color: #1a3a5c;
+  background-color: #2f7dff;
 }
 
 /* 卡片列表 */
 .schedule-list {
-  background: #fff;
-  border-radius: 4px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+  background: #101b29;
+  border: 1px solid #223044;
+  border-radius: 7px;
+  box-shadow: none;
   overflow: hidden;
 }
 
@@ -460,17 +461,17 @@ getList();
   display: flex;
   align-items: center;
   padding: 14px 20px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid rgba(145, 166, 195, 0.14);
   transition: background 0.2s;
 }
 .schedule-item:hover {
-  background: #f5f8fa;
+  background: #16263a;
 }
 .schedule-item.clickable {
   cursor: pointer;
 }
 .schedule-item.clickable:hover {
-  background: #e8f4fd;
+  background: #172b43;
 }
 .schedule-item:last-child {
   border-bottom: none;
@@ -483,11 +484,11 @@ getList();
 .date-main {
   font-size: 14px;
   font-weight: 600;
-  color: #333;
+  color: #e9eef6;
 }
 .date-sub {
   font-size: 11px;
-  color: #999;
+  color: #7f8da2;
   margin-top: 2px;
 }
 
@@ -499,7 +500,7 @@ getList();
 .schedule-title {
   flex: 1;
   font-size: 14px;
-  color: #333;
+  color: #dfe6ef;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -510,7 +511,7 @@ getList();
   width: 140px;
   flex-shrink: 0;
   font-size: 12px;
-  color: #999;
+  color: #8996a9;
   text-align: right;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -537,19 +538,19 @@ getList();
   font-size: 12px;
 }
 .type-match {
-  background: #e6f7ff;
-  color: #1890ff;
-  border: 1px solid #91d5ff;
+  background: rgba(47, 125, 255, .13);
+  color: #66a7ff;
+  border: 1px solid rgba(47, 125, 255, .44);
 }
 .type-training {
-  background: #f6ffed;
-  color: #52c41a;
-  border: 1px solid #b7eb8f;
+  background: rgba(34, 181, 115, .12);
+  color: #45ce91;
+  border: 1px solid rgba(34, 181, 115, .4);
 }
 .type-meeting {
-  background: #f9f0ff;
-  color: #722ed1;
-  border: 1px solid #d3adf7;
+  background: rgba(156, 104, 255, .12);
+  color: #b28cff;
+  border: 1px solid rgba(156, 104, 255, .4);
 }
 
 /* 状态标签 */
@@ -560,23 +561,23 @@ getList();
   font-size: 12px;
 }
 .status-scheduled {
-  background: #e6f7ff;
-  color: #1890ff;
-  border: 1px solid #91d5ff;
+  background: rgba(47, 125, 255, .13);
+  color: #66a7ff;
+  border: 1px solid rgba(47, 125, 255, .44);
 }
 .status-completed {
-  background: #f6ffed;
-  color: #52c41a;
-  border: 1px solid #b7eb8f;
+  background: rgba(34, 181, 115, .12);
+  color: #45ce91;
+  border: 1px solid rgba(34, 181, 115, .4);
 }
 .status-cancelled {
-  background: #fafafa;
-  color: #999;
-  border: 1px solid #d9d9d9;
+  background: rgba(115, 128, 149, .12);
+  color: #98a5b8;
+  border: 1px solid rgba(115, 128, 149, .38);
 }
 .status-postponed {
-  background: #fff7e6;
-  color: #fa8c16;
-  border: 1px solid #ffd591;
+  background: rgba(255, 155, 49, .12);
+  color: #ffad57;
+  border: 1px solid rgba(255, 155, 49, .4);
 }
 </style>

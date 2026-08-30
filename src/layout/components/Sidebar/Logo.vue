@@ -1,21 +1,15 @@
 <template>
   <div class="sidebar-logo-container" :class="{ 'collapse': collapse }" :style="{ backgroundColor: sideTheme === 'theme-dark' ? variables.menuBackground : variables.menuLightBackground }">
-    <transition name="sidebarLogoFade">
-      <router-link v-if="collapse" key="collapse" class="sidebar-logo-link" to="/">
-        <img v-if="logo" :src="logo" class="sidebar-logo" />
-        <h1 v-else class="sidebar-title" :style="{ color: sideTheme === 'theme-dark' ? variables.logoTitleColor : variables.logoLightTitleColor }">{{ title }}</h1>
-      </router-link>
-      <router-link v-else key="expand" class="sidebar-logo-link" to="/">
-        <img v-if="logo" :src="logo" class="sidebar-logo" />
-        <h1 class="sidebar-title" :style="{ color: sideTheme === 'theme-dark' ? variables.logoTitleColor : variables.logoLightTitleColor }">{{ title }}</h1>
-      </router-link>
-    </transition>
+    <router-link class="sidebar-logo-link" to="/" aria-label="返回首页">
+      <img :src="logo" class="sidebar-logo" alt="天津津门虎俱乐部队徽" />
+      <span class="sidebar-title">{{ title }}</span>
+    </router-link>
   </div>
 </template>
 
 <script setup>
 import variables from '@/assets/styles/variables.module.scss'
-import logo from '@/assets/logo/logo.png'
+import logo from '@/assets/images/tianjin-jinmen-tiger.png'
 import useSettingsStore from '@/store/modules/settings'
 
 defineProps({
@@ -31,61 +25,69 @@ const sideTheme = computed(() => settingsStore.sideTheme);
 </script>
 
 <style lang="scss" scoped>
-.sidebarLogoFade-enter-active {
-  transition: opacity 1.5s;
-}
-
-.sidebarLogoFade-enter,
-.sidebarLogoFade-leave-to {
-  opacity: 0;
-}
-
 .sidebar-logo-container {
   position: relative;
   width: 100%;
-  height: 50px;
-  line-height: 50px;
-  background: #cdeaf8;
+  height: 104px;
+  line-height: 104px;
+  background: #091321;
   text-align: center;
   overflow: hidden;
 
   & .sidebar-logo-link {
-    display: flex;
+    // 覆盖 sidebar.scss 中高优先级的 #app .sidebar-container a { display: inline-block; }
+    display: flex !important;
     align-items: center;
     height: 100%;
     width: 100%;
-    padding: 0 16px;
+    gap: 10px;
+    padding: 0 14px;
     box-sizing: border-box;
     text-align: left;
 
     & .sidebar-logo {
-      width: 32px;
-      height: 32px;
+      width: 48px;
+      height: 58px;
       flex-shrink: 0;
-      margin-right: 10px;
-      transform: translateY(6px);
+      object-fit: contain;
+      filter: drop-shadow(0 5px 9px rgba(0, 0, 0, .34));
     }
 
     & .sidebar-title {
-      display: inline-block;
+      display: block;
+      flex: 1;
+      min-width: 0;
       margin: 0;
-      color: #fff;
+      color: #f3f6fa !important;
       font-weight: 600;
-      line-height: 50px;
+      overflow: hidden;
       font-size: 14px;
-      font-family: Avenir, Helvetica Neue, Arial, Helvetica, sans-serif;
+      font-family: "Microsoft YaHei UI", "PingFang SC", sans-serif;
+      line-height: 1.35;
+      letter-spacing: .3px;
+      opacity: 1;
+      visibility: visible;
+      text-overflow: ellipsis;
       white-space: nowrap;
     }
   }
 
   &.collapse {
+    height: 104px;
+
     .sidebar-logo-link {
       justify-content: center;
+      gap: 0;
       padding: 0;
     }
 
     .sidebar-logo {
-      margin-right: 0;
+      width: 42px;
+      height: 50px;
+    }
+
+    .sidebar-title {
+      display: none;
     }
   }
 }

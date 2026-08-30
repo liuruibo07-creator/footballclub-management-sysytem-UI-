@@ -85,8 +85,7 @@ function isActive(r) {
 function activeStyle(tag) {
   if (!isActive(tag)) return {};
   return {
-    "background-color": theme.value,
-    "border-color": theme.value
+    "color": "#f3f6fa"
   };
 }
 function isAffix(tag) {
@@ -245,9 +244,9 @@ function handleScroll() {
 .tags-view-container {
   height: 34px;
   width: 100%;
-  background: #fff;
-  border-bottom: 1px solid #d8dce5;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.12), 0 0 3px 0 rgba(0, 0, 0, 0.04);
+  background: #0b1523;
+  border-bottom: 1px solid rgba(126, 153, 190, 0.12);
+  box-shadow: none;
   .tags-view-wrapper {
     .tags-view-item {
       display: inline-block;
@@ -255,9 +254,10 @@ function handleScroll() {
       cursor: pointer;
       height: 26px;
       line-height: 26px;
-      border: 1px solid #d8dce5;
-      color: #495060;
-      background: #fff;
+      border: 1px solid transparent;
+      border-radius: 5px;
+      color: #748197;
+      background: transparent;
       padding: 0 8px;
       font-size: 12px;
       margin-left: 5px;
@@ -269,12 +269,12 @@ function handleScroll() {
         margin-right: 15px;
       }
       &.active {
-        background-color: #42b983;
+        border-color: rgba(47, 125, 255, .24);
+        background: rgba(47, 125, 255, .12);
         color: #fff;
-        border-color: #42b983;
         &::before {
           content: "";
-          background: #fff;
+          background: #2f7dff;
           display: inline-block;
           width: 8px;
           height: 8px;
@@ -287,7 +287,8 @@ function handleScroll() {
   }
   .contextmenu {
     margin: 0;
-    background: #fff;
+    border: 1px solid #223044;
+    background: #142131;
     z-index: 3000;
     position: absolute;
     list-style-type: none;
@@ -295,14 +296,14 @@ function handleScroll() {
     border-radius: 4px;
     font-size: 12px;
     font-weight: 400;
-    color: #333;
+    color: #cbd4e0;
     box-shadow: 2px 2px 3px 0 rgba(0, 0, 0, 0.3);
     li {
       margin: 0;
       padding: 7px 16px;
       cursor: pointer;
       &:hover {
-        background: #eee;
+        background: #1a2a3f;
       }
     }
   }
