@@ -7,7 +7,7 @@
 
       <div v-if="nextMatch" class="match-stage">
         <div class="team">
-          <img v-if="getTeamLogo(nextMatch.homeTeam)" :src="getTeamLogo(nextMatch.homeTeam)" :alt="`${nextMatch.homeTeam}队徽`" />
+          <img v-if="getTeamLogo(nextMatch.homeTeam)" :src="getTeamLogo(nextMatch.homeTeam)" :alt="`${nextMatch.homeTeam}队徽`" @error="handleLogoError(nextMatch.homeTeam)" />
           <span v-else class="team-logo-fallback" aria-hidden="true">{{ getTeamAbbr(nextMatch.homeTeam) }}</span>
           <strong>{{ nextMatch.homeTeam }}</strong>
         </div>
@@ -18,7 +18,7 @@
           <span><el-icon><OfficeBuilding /></el-icon>{{ nextMatch.venue || '场地待定' }}</span>
         </div>
         <div class="team">
-          <img v-if="getTeamLogo(nextMatch.awayTeam)" :src="getTeamLogo(nextMatch.awayTeam)" :alt="`${nextMatch.awayTeam}队徽`" />
+          <img v-if="getTeamLogo(nextMatch.awayTeam)" :src="getTeamLogo(nextMatch.awayTeam)" :alt="`${nextMatch.awayTeam}队徽`" @error="handleLogoError(nextMatch.awayTeam)" />
           <span v-else class="team-logo-fallback" aria-hidden="true">{{ getTeamAbbr(nextMatch.awayTeam) }}</span>
           <strong>{{ nextMatch.awayTeam }}</strong>
         </div>
@@ -174,6 +174,7 @@ const trainingLoading = ref(false)
 
 // 队名 -> OSS队徽URL映射,由loadTeamLogos()从后端football_team_logo表加载
 const logoMap = ref({})
+const failedLogoTeams = ref(new Set())
 
 function loadNextMatch() {
   nextMatchLoading.value = true
@@ -185,7 +186,12 @@ function loadNextMatch() {
 }
 
 function getTeamLogo(teamName) {
-  return logoMap.value[teamName] || ''
+  return failedLogoTeams.value.has(teamName) ? '' : (logoMap.value[teamName] || '')
+}
+
+/** OSS 对象不存在、无读取权限或网络失败时，切换为球队简称占位。 */
+function handleLogoError(teamName) {
+  failedLogoTeams.value = new Set([...failedLogoTeams.value, teamName])
 }
 
 function getTeamAbbr(teamName) {
@@ -306,6 +312,7 @@ function loadTeamLogos() {
       if (item.logoUrl) map[item.teamName] = item.logoUrl
     })
     logoMap.value = map
+    failedLogoTeams.value = new Set()
   }).catch(() => {})
 }
 
