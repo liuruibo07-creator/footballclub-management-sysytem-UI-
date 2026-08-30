@@ -725,10 +725,22 @@ getList();
 }
 
 :deep(.user-table-card .pagination-container) {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 64px;
   height: auto;
+  box-sizing: border-box;
   margin: 0;
-  padding: 18px 16px !important;
+  padding: 14px 16px !important;
   border-top: 1px solid #edf0f5;
+}
+
+:deep(.user-table-card .pagination-container .el-pagination) {
+  position: static;
+  right: auto;
+  width: 100%;
+  justify-content: flex-end;
 }
 
 @media (max-width: 768px) {

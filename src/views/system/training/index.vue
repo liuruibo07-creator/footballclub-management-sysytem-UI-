@@ -96,7 +96,7 @@
         </template>
       </el-table-column>
       <el-table-column label="场地" align="center" prop="venue" />
-      <el-table-column label="参与人数" align="center" prop="participantCount" width="100" />
+      <el-table-column label="预期参与人数" align="center" prop="participantCount" width="120" />
       <el-table-column label="出勤率" align="center" prop="attendanceRate" width="100">
         <template #default="scope">
           <span>{{ scope.row.attendanceRate || '-' }}</span>
@@ -175,43 +175,24 @@
             />
           </el-select>
         </el-form-item>
-        <el-divider content-position="center">参与球员</el-divider>
-        <el-row :gutter="10" class="mb8">
-          <el-col :span="1.5">
-            <el-button type="primary" icon="Plus" @click="handleAddFootballTrainingPlayer">添加</el-button>
-          </el-col>
-          <el-col :span="1.5">
-            <el-button type="danger" icon="Delete" @click="handleDeleteFootballTrainingPlayer">删除</el-button>
-          </el-col>
-        </el-row>
-        <el-table :data="footballTrainingPlayerList" :row-class-name="rowFootballTrainingPlayerIndex" @selection-change="handleFootballTrainingPlayerSelectionChange" ref="footballTrainingPlayer">
-          <el-table-column type="selection" width="50" align="center" />
-          <el-table-column label="序号" align="center" prop="index" width="50"/>
-          <el-table-column label="球员" prop="playerId" width="200">
-            <template #default="scope">
-              <el-select v-model="scope.row.playerId" placeholder="请选择球员" filterable>
-                <el-option
-                  v-for="player in playerList"
-                  :key="player.id"
-                  :label="player.nameCn"
-                  :value="player.id"
-                />
-              </el-select>
-            </template>
-          </el-table-column>
-          <el-table-column label="出勤状态" prop="attendanceStatus" width="150">
-            <template #default="scope">
-              <el-select v-model="scope.row.attendanceStatus" placeholder="请选择出勤状态">
-                <el-option
-                  v-for="dict in football_attendance_status"
-                  :key="dict.value"
-                  :label="dict.label"
-                  :value="parseInt(dict.value)"
-                />
-              </el-select>
-            </template>
-          </el-table-column>
-        </el-table>
+        <el-divider content-position="center">缺席球员</el-divider>
+        <el-form-item label="缺席人员">
+          <el-select v-model="selectedPlayerIds" multiple filterable collapse-tags placeholder="请从所有球员中选择缺席人员" style="width:100%">
+            <el-option
+              v-for="player in playerList"
+              :key="player.id"
+              :label="player.nameCn"
+              :value="player.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-alert
+          v-if="playerList.length > 0"
+          :title="`当前共 ${playerList.length} 名球员，缺席 ${selectedPlayerIds.length} 人，预计出勤率 ${previewAttendanceRate}%`"
+          type="info"
+          :closable="false"
+          show-icon
+        />
       </el-form>
       <template #footer>
         <div class="dialog-footer">
@@ -225,20 +206,23 @@
 
 <script setup name="Training">
 import { listTraining, getTraining, delTraining, addTraining, updateTraining } from "@/api/system/training";
-import { listPlayer } from "@/api/player/player";
+import { listPlayer } from "@/api/pp/pp";
 
 const { proxy } = getCurrentInstance();
 
-const { football_training_type, football_training_status, football_attendance_status } = proxy.useDict('football_training_type', 'football_training_status', 'football_attendance_status');
+const { football_training_type, football_training_status } = proxy.useDict('football_training_type', 'football_training_status');
 
 const trainingList = ref([]);
-const footballTrainingPlayerList = ref([]);
 const playerList = ref([]);
+const selectedPlayerIds = ref([]);
+const previewAttendanceRate = computed(() => {
+  if (playerList.value.length === 0) return 0;
+  return Math.round((playerList.value.length - selectedPlayerIds.value.length) * 100 / playerList.value.length);
+});
 const open = ref(false);
 const loading = ref(true);
 const showSearch = ref(true);
 const ids = ref([]);
-const checkedFootballTrainingPlayer = ref([]);
 const single = ref(true);
 const multiple = ref(true);
 const total = ref(0);
@@ -282,7 +266,9 @@ function getList() {
 /** 加载球员列表（用于下拉选择） */
 function getPlayerList() {
   listPlayer({ pageSize: 1000 }).then(response => {
-    playerList.value = response.rows || [];
+    playerList.value = Array.from(
+      new Map((response.rows || []).map(player => [player.id, player])).values()
+    );
   });
 }
 
@@ -310,7 +296,7 @@ function reset() {
     updateTime: null,
     delFlag: null
   };
-  footballTrainingPlayerList.value = [];
+  selectedPlayerIds.value = [];
   proxy.resetForm("trainingRef");
 }
 
@@ -346,7 +332,9 @@ function handleUpdate(row) {
   const _id = row.id || ids.value
   getTraining(_id).then(response => {
     form.value = response.data;
-    footballTrainingPlayerList.value = response.data.footballTrainingPlayerList;
+    selectedPlayerIds.value = (response.data.footballTrainingPlayerList || [])
+      .filter(p => p.attendanceStatus === 2 || p.attendanceStatus === 3)
+      .map(p => p.playerId);
     open.value = true;
     title.value = "修改训练";
   });
@@ -357,7 +345,9 @@ function handleDetail(row) {
   reset();
   getTraining(row.id).then(response => {
     form.value = response.data;
-    footballTrainingPlayerList.value = response.data.footballTrainingPlayerList;
+    selectedPlayerIds.value = (response.data.footballTrainingPlayerList || [])
+      .filter(p => p.attendanceStatus === 2 || p.attendanceStatus === 3)
+      .map(p => p.playerId);
     open.value = true;
     title.value = "训练详情";
   });
@@ -367,7 +357,10 @@ function handleDetail(row) {
 function submitForm() {
   proxy.$refs["trainingRef"].validate(valid => {
     if (valid) {
-      form.value.footballTrainingPlayerList = footballTrainingPlayerList.value;
+      form.value.footballTrainingPlayerList = selectedPlayerIds.value.map(playerId => ({
+        playerId,
+        attendanceStatus: 2
+      }));
       if (form.value.id != null) {
         updateTraining(form.value).then(response => {
           proxy.$modal.msgSuccess("修改成功");
@@ -394,37 +387,6 @@ function handleDelete(row) {
     getList();
     proxy.$modal.msgSuccess("删除成功");
   }).catch(() => {});
-}
-
-/** 训练参与及出勤序号 */
-function rowFootballTrainingPlayerIndex({ row, rowIndex }) {
-  row.index = rowIndex + 1;
-}
-
-/** 训练参与及出勤添加按钮操作 */
-function handleAddFootballTrainingPlayer() {
-  let obj = {};
-  obj.playerId = "";
-  obj.attendanceStatus = "";
-  footballTrainingPlayerList.value.push(obj);
-}
-
-/** 训练参与及出勤删除按钮操作 */
-function handleDeleteFootballTrainingPlayer() {
-  if (checkedFootballTrainingPlayer.value.length == 0) {
-    proxy.$modal.msgError("请先选择要删除的球员数据");
-  } else {
-    const footballTrainingPlayers = footballTrainingPlayerList.value;
-    const checkedFootballTrainingPlayers = checkedFootballTrainingPlayer.value;
-    footballTrainingPlayerList.value = footballTrainingPlayers.filter(function(item) {
-      return checkedFootballTrainingPlayers.indexOf(item.index) == -1
-    });
-  }
-}
-
-/** 复选框选中数据 */
-function handleFootballTrainingPlayerSelectionChange(selection) {
-  checkedFootballTrainingPlayer.value = selection.map(item => item.index)
 }
 
 /** 导出按钮操作 */

@@ -17,6 +17,14 @@ export function getSeasonOverview() {
   })
 }
 
+// 查询首页下一场比赛
+export function getNextMatch() {
+  return request({
+    url: '/match/match/next',
+    method: 'get'
+  })
+}
+
 // 查询比赛管理详细
 export function getMatch(id) {
   return request({

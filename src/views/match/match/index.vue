@@ -89,8 +89,8 @@
         <el-form-item label="比赛时间" prop="matchDate">
           <el-date-picker clearable
             v-model="form.matchDate"
-            type="date"
-            value-format="YYYY-MM-DD"
+            type="datetime"
+            value-format="YYYY-MM-DD HH:mm:ss"
             placeholder="请选择比赛时间">
           </el-date-picker>
         </el-form-item>

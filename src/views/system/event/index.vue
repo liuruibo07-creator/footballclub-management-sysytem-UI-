@@ -61,8 +61,8 @@
           <span :class="['status-badge', getStatusClass(item.status)]">{{ getStatusLabel(item.status) }}</span>
         </div>
         <div class="schedule-actions">
-          <el-button link type="primary" icon="Edit" @click="handleUpdate(item)" v-hasPermi="['system:event:edit']">修改</el-button>
-          <el-button link type="danger" icon="Delete" @click="handleDelete(item)" v-hasPermi="['system:event:remove']">删除</el-button>
+          <el-button link type="primary" icon="Edit" @click.stop="handleUpdate(item)" v-hasPermi="['system:event:edit']">修改</el-button>
+          <el-button link type="danger" icon="Delete" @click.stop="handleDelete(item)" v-hasPermi="['system:event:remove']">删除</el-button>
         </div>
       </div>
     </div>
@@ -88,19 +88,6 @@
         <el-descriptions-item label="训练目标" :span="2">{{ trainingDetail.trainingGoal || '-' }}</el-descriptions-item>
         <el-descriptions-item label="训练描述" :span="2">{{ trainingDetail.description || '-' }}</el-descriptions-item>
       </el-descriptions>
-      <!-- 参与球员 -->
-      <div v-if="trainingDetail && trainingDetail.footballTrainingPlayerList && trainingDetail.footballTrainingPlayerList.length > 0" style="margin-top: 16px;">
-        <div style="font-weight: 600; margin-bottom: 8px;">参与球员</div>
-        <el-table :data="trainingDetail.footballTrainingPlayerList" size="small" border>
-          <el-table-column prop="playerName" label="姓名" />
-          <el-table-column prop="position" label="位置">
-            <template #default="scope">{{ getPositionLabel(scope.row.position) }}</template>
-          </el-table-column>
-          <el-table-column prop="attendanceStatus" label="出勤状态">
-            <template #default="scope">{{ getAttendanceLabel(scope.row.attendanceStatus) }}</template>
-          </el-table-column>
-        </el-table>
-      </div>
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="trainingDetailOpen = false">关 闭</el-button>
@@ -158,16 +145,6 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="参与人员">
-          <el-select v-model="selectedPlayerIds" multiple placeholder="请选择参与人员" style="width:100%">
-            <el-option
-              v-for="player in playerList"
-              :key="player.id"
-              :label="player.nameCn + '（' + getPositionLabel(player.position) + '）'"
-              :value="player.id"
-            />
-          </el-select>
-        </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
@@ -181,8 +158,7 @@
 
 <script setup name="Event">
 import { listEvent, getEvent, delEvent, addEvent, updateEvent } from "@/api/system/event";
-import { getTraining, updateTraining } from "@/api/system/training";
-import { listPp } from "@/api/pp/pp";
+import { getTraining } from "@/api/system/training";
 
 const { proxy } = getCurrentInstance();
 const route = useRoute();
@@ -194,17 +170,8 @@ const loading = ref(true);
 const total = ref(0);
 const dialogTitle = ref("");
 const activeTab = ref("all");
-const playerList = ref([]);
-const selectedPlayerIds = ref([]);
 const trainingDetailOpen = ref(false);
 const trainingDetail = ref(null);
-
-/** 获取球员列表 */
-function getPlayerList() {
-  listPp({ pageSize: 100, status: '活跃' }).then(response => {
-    playerList.value = response.rows || [];
-  });
-}
 
 const data = reactive({
   form: {},
@@ -304,7 +271,6 @@ function reset() {
     footballSchedulePlayerList: []
   };
   proxy.resetForm("eventRef");
-  selectedPlayerIds.value = [];
 }
 
 /** 搜索按钮操作 */
@@ -326,7 +292,6 @@ watch(() => route.query.status, status => {
 /** 新增按钮操作 */
 function handleAdd() {
   reset();
-  getPlayerList();
   open.value = true;
   dialogTitle.value = "新增日程";
 }
@@ -334,22 +299,10 @@ function handleAdd() {
 /** 修改按钮操作 */
 function handleUpdate(row) {
   reset();
-  getPlayerList();
   const _id = row.id;
   getEvent(_id).then(response => {
     form.value = response.data;
-    // 从返回的参与人列表中提取playerId
-    if (response.data.footballSchedulePlayerList) {
-      selectedPlayerIds.value = response.data.footballSchedulePlayerList.map(p => p.playerId);
-    }
-    // 如果是训练事件且有trainingId，从训练记录中获取参与人员
-    if (response.data.eventType == 1 && response.data.trainingId) {
-      getTraining(response.data.trainingId).then(trainingRes => {
-        if (trainingRes.data && trainingRes.data.footballTrainingPlayerList) {
-          selectedPlayerIds.value = trainingRes.data.footballTrainingPlayerList.map(p => p.playerId);
-        }
-      });
-    }
+    form.value.footballSchedulePlayerList = [];
     open.value = true;
     dialogTitle.value = "修改日程";
   });
@@ -359,20 +312,7 @@ function handleUpdate(row) {
 function submitForm() {
   proxy.$refs["eventRef"].validate(valid => {
     if (valid) {
-      const playerData = selectedPlayerIds.value.map(playerId => ({
-        playerId: playerId
-      }));
-      // 如果是训练事件且有trainingId，同步更新训练记录的参与人员
-      if (form.value.eventType == 1 && form.value.trainingId) {
-        const trainingData = {
-          id: form.value.trainingId,
-          footballTrainingPlayerList: playerData
-        };
-        updateTraining(trainingData).then(() => {
-          proxy.$modal.msgSuccess("参与人员已同步到训练记录");
-        }).catch(() => {});
-      }
-      form.value.footballSchedulePlayerList = playerData;
+      form.value.footballSchedulePlayerList = [];
       if (form.value.id != null) {
         updateEvent(form.value).then(response => {
           proxy.$modal.msgSuccess("修改成功");
@@ -475,12 +415,6 @@ function getTrainingTypeLabel(value) {
 /** 获取训练状态标签 */
 function getTrainingStatusLabel(value) {
   const map = { 0: '已计划', 1: '已完成', 2: '已取消' };
-  return map[value] || value;
-}
-
-/** 获取出勤状态标签 */
-function getAttendanceLabel(value) {
-  const map = { 0: '待确认', 1: '已出勤', 2: '缺勤', 3: '请假' };
   return map[value] || value;
 }
 

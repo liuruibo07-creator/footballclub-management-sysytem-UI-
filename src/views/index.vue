@@ -1,27 +1,31 @@
 <template>
   <main class="match-home">
-    <section class="match-hero" aria-labelledby="next-match-title">
+    <section class="match-hero" aria-labelledby="next-match-title" v-loading="nextMatchLoading">
       <div class="hero-shade" />
       <div class="hero-heading">
         <span id="next-match-title">下一场比赛</span>
       </div>
 
-      <div class="match-stage">
+      <div v-if="nextMatch" class="match-stage">
         <div class="team">
-          <img :src="tianjinLogo" alt="天津津门虎队徽" />
-          <strong>天津津门虎</strong>
+          <img v-if="getTeamLogo(nextMatch.homeTeam)" :src="getTeamLogo(nextMatch.homeTeam)" :alt="`${nextMatch.homeTeam}队徽`" />
+          <span v-else class="team-logo-fallback" aria-hidden="true">{{ getTeamAbbr(nextMatch.homeTeam) }}</span>
+          <strong>{{ nextMatch.homeTeam }}</strong>
         </div>
         <div class="match-meta">
-          <strong>中超联赛 第25轮</strong>
+          <strong>{{ getCompetitionLabel(nextMatch) }}</strong>
           <b>VS</b>
-          <span><el-icon><Clock /></el-icon>2026-08-29&nbsp; 19:00</span>
-          <span><el-icon><OfficeBuilding /></el-icon>天津泰达足球场</span>
+          <span><el-icon><Clock /></el-icon>{{ formatMatchTime(nextMatch.matchDate) }}</span>
+          <span><el-icon><OfficeBuilding /></el-icon>{{ nextMatch.venue || '场地待定' }}</span>
         </div>
         <div class="team">
-          <img :src="qingdaoLogo" alt="青岛西海岸队徽" />
-          <strong>青岛西海岸</strong>
+          <img v-if="getTeamLogo(nextMatch.awayTeam)" :src="getTeamLogo(nextMatch.awayTeam)" :alt="`${nextMatch.awayTeam}队徽`" />
+          <span v-else class="team-logo-fallback" aria-hidden="true">{{ getTeamAbbr(nextMatch.awayTeam) }}</span>
+          <strong>{{ nextMatch.awayTeam }}</strong>
         </div>
       </div>
+
+      <div v-else-if="!nextMatchLoading" class="next-match-empty">暂无待进行比赛</div>
 
     </section>
 
@@ -146,14 +150,18 @@
 import { Calendar, Clock, OfficeBuilding, Right } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { getPendingEventSummary } from '@/api/system/event'
-import { getSeasonOverview } from '@/api/match/match'
+import { getNextMatch, getSeasonOverview } from '@/api/match/match'
 import { listTraining } from '@/api/system/training'
 import tianjinLogo from '@/assets/images/tianjin-jinmen-tiger.png'
 import qingdaoLogo from '@/assets/images/qingdao-west-coast.png'
+import shandongLogo from '@/assets/images/shandong-taishan.png'
+import zhejiangLogo from '@/assets/images/zhejiang-professional.png'
 
 defineOptions({ name: 'Index' })
 
 const router = useRouter()
+const nextMatch = ref(null)
+const nextMatchLoading = ref(false)
 const pendingLoading = ref(false)
 const pendingSchedules = ref([])
 const pendingTotal = ref(0)
@@ -178,6 +186,50 @@ const teamHealthStats = [
 
 const todayTrainings = ref([])
 const trainingLoading = ref(false)
+
+const teamLogos = {
+  '天津津门虎': tianjinLogo,
+  '青岛西海岸': qingdaoLogo,
+  '山东泰山': shandongLogo,
+  '浙江俱乐部绿城': zhejiangLogo,
+  '浙江职业足球俱乐部': zhejiangLogo,
+  '浙江队': zhejiangLogo,
+  '浙江FC': zhejiangLogo
+}
+
+function loadNextMatch() {
+  nextMatchLoading.value = true
+  getNextMatch().then(response => {
+    nextMatch.value = response.data || null
+  }).finally(() => {
+    nextMatchLoading.value = false
+  })
+}
+
+function getTeamLogo(teamName) {
+  return teamLogos[teamName] || ''
+}
+
+function getTeamAbbr(teamName) {
+  return (teamName || '待定').slice(0, 2)
+}
+
+function getCompetitionLabel(match) {
+  const competition = match.competitionName === '中国足球超级联赛' ? '中超联赛' : (match.competitionName || '赛事待定')
+  return match.roundNo ? `${competition} 第${match.roundNo}轮` : competition
+}
+
+function formatMatchTime(dateTime) {
+  if (!dateTime) return '时间待定'
+  const date = new Date(dateTime.replace(' ', 'T'))
+  if (Number.isNaN(date.getTime())) return '时间待定'
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const hour = String(date.getHours()).padStart(2, '0')
+  const minute = String(date.getMinutes()).padStart(2, '0')
+  return `${year}-${month}-${day} ${hour}:${minute}`
+}
 
 /** 加载今日训练数据 */
 function loadTodayTrainings() {
@@ -269,6 +321,7 @@ function viewInjuries() {
 }
 
 function loadHomeData() {
+  loadNextMatch()
   loadSeasonOverview()
   loadPendingSchedules()
   loadTodayTrainings()
@@ -351,6 +404,32 @@ function showMessage(target) {
     letter-spacing: 0.5px;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
   }
+}
+
+.team-logo-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(72px, 6.5vw, 88px);
+  height: clamp(72px, 6.5vw, 88px);
+  border: 2px solid rgba(255, 255, 255, 0.72);
+  border-radius: 50%;
+  background: rgba(8, 55, 116, 0.78);
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.next-match-empty {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(100% - 65px);
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 18px;
 }
 
 .match-meta {
