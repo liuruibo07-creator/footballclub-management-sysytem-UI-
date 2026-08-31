@@ -24,7 +24,7 @@
         <div class="stat-card">
           <div class="stat-title">赛季总进球</div>
           <div class="stat-value stat-blue">{{ teamStats.totalGoals || 0 }}</div>
-          <div class="stat-sub">场均 {{ teamStats.totalAppearances > 0 ? (teamStats.totalGoals / Math.max(teamStats.playerCount || 1, 1)).toFixed(2) : '0' }} 球</div>
+          <div class="stat-sub">场均 {{ teamStats.matchCount > 0 ? (teamStats.totalGoals / teamStats.matchCount).toFixed(2) : '0' }} 球</div>
         </div>
       </el-col>
       <el-col :span="5">
@@ -489,7 +489,9 @@ function loadTeamStats() {
     season: queryParams.value.season,
     competition: queryParams.value.competition || undefined
   }).then(response => {
-    const list = response.data || []
+    const data = response.data || {}
+    const list = data.list || []
+    const matchCounts = data.matchCounts || []
     const totalApps = list.reduce((s, i) => s + (i.appearances || 0), 0)
     const totalStarts = list.reduce((s, i) => s + (i.starts || 0), 0)
     teamStats.value = {
@@ -499,7 +501,7 @@ function loadTeamStats() {
       totalYellowCards: list.reduce((s, i) => s + (i.yellowCards || 0), 0),
       totalRedCards: list.reduce((s, i) => s + (i.redCards || 0), 0),
       startRate: totalApps > 0 ? Math.round(totalStarts / totalApps * 100) : 0,
-      playerCount: list.length
+      matchCount: matchCounts.reduce((s, m) => s + Number(m.matchCount || 0), 0)
     }
   })
 }
