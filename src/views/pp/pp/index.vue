@@ -90,7 +90,7 @@
       <el-table-column label="照片" align="center" width="82">
         <template #default="scope">
           <span class="player-photo">
-            <img v-if="playerPhoto(scope.row.nameCn)" :src="playerPhoto(scope.row.nameCn)" :alt="scope.row.nameCn" />
+            <img v-if="playerPhoto(scope.row.nameCn, scope.row.avatarUrl)" :src="playerPhoto(scope.row.nameCn, scope.row.avatarUrl)" :alt="scope.row.nameCn" />
             <span v-else>{{ (scope.row.nameCn || '').charAt(0) }}</span>
           </span>
         </template>
@@ -143,6 +143,9 @@
         </el-form-item>
         <el-form-item label="姓名" prop="nameCn">
           <el-input v-model="form.nameCn" placeholder="请输入姓名" />
+        </el-form-item>
+        <el-form-item label="头像图片" prop="avatarUrl">
+          <image-upload v-model="form.avatarUrl" :limit="1" :file-size="5" :file-type="['png', 'jpg', 'jpeg', 'webp']" />
         </el-form-item>
         <el-form-item label="位置" prop="position">
           <el-select v-model="form.position" placeholder="请选择位置">
@@ -251,8 +254,8 @@ const data = reactive({
 
 const { queryParams, form, rules } = toRefs(data);
 
-function playerPhoto(name) {
-  return getPlayerPhoto(name);
+function playerPhoto(name, avatarUrl) {
+  return getPlayerPhoto(name, avatarUrl);
 }
 
 /** 查询球员档案列表 */
@@ -277,6 +280,7 @@ function reset() {
     id: null,
     jerseyNumber: null,
     nameCn: null,
+    avatarUrl: null,
     position: null,
     nationality: null,
     birthDate: null,

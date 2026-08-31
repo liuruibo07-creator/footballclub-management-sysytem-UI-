@@ -96,7 +96,7 @@
           <el-table-column label="照片" align="center" width="76">
             <template #default="scope">
               <span class="table-player-photo">
-                <img v-if="playerPhoto(scope.row.playerName)" :src="playerPhoto(scope.row.playerName)" :alt="scope.row.playerName" />
+                <img v-if="playerPhoto(scope.row.playerName, scope.row.avatarUrl)" :src="playerPhoto(scope.row.playerName, scope.row.avatarUrl)" :alt="scope.row.playerName" />
                 <span v-else>{{ (scope.row.playerName || '').charAt(0) }}</span>
               </span>
             </template>
@@ -159,7 +159,7 @@
                 <div v-for="(item, idx) in goalRanking" :key="'g' + idx" class="ranking-item">
                   <span :class="['ranking-num', { top1: idx === 0, top2: idx === 1, top3: idx === 2 }]">{{ idx + 1 }}</span>
                   <span class="ranking-avatar">
-                    <img v-if="playerPhoto(item.playerName)" :src="playerPhoto(item.playerName)" :alt="item.playerName" />
+                    <img v-if="playerPhoto(item.playerName, item.avatarUrl)" :src="playerPhoto(item.playerName, item.avatarUrl)" :alt="item.playerName" />
                     <span v-else>{{ (item.playerName || '').charAt(0) }}</span>
                   </span>
                   <div class="ranking-info">
@@ -181,7 +181,7 @@
                 <div v-for="(item, idx) in assistRanking" :key="'a' + idx" class="ranking-item">
                   <span :class="['ranking-num', { top1: idx === 0, top2: idx === 1, top3: idx === 2 }]">{{ idx + 1 }}</span>
                   <span class="ranking-avatar">
-                    <img v-if="playerPhoto(item.playerName)" :src="playerPhoto(item.playerName)" :alt="item.playerName" />
+                    <img v-if="playerPhoto(item.playerName, item.avatarUrl)" :src="playerPhoto(item.playerName, item.avatarUrl)" :alt="item.playerName" />
                     <span v-else>{{ (item.playerName || '').charAt(0) }}</span>
                   </span>
                   <div class="ranking-info">
@@ -206,7 +206,7 @@
                 <div v-for="(item, idx) in minutesRanking" :key="'m' + idx" class="ranking-item">
                   <span :class="['ranking-num', { top1: idx === 0, top2: idx === 1, top3: idx === 2 }]">{{ idx + 1 }}</span>
                   <span class="ranking-avatar">
-                    <img v-if="playerPhoto(item.playerName)" :src="playerPhoto(item.playerName)" :alt="item.playerName" />
+                    <img v-if="playerPhoto(item.playerName, item.avatarUrl)" :src="playerPhoto(item.playerName, item.avatarUrl)" :alt="item.playerName" />
                     <span v-else>{{ (item.playerName || '').charAt(0) }}</span>
                   </span>
                   <div class="ranking-info">
@@ -226,7 +226,7 @@
                 <div v-for="(item, idx) in yellowRanking" :key="'y' + idx" class="ranking-item">
                   <span :class="['ranking-num', { top1: idx === 0, top2: idx === 1, top3: idx === 2 }]">{{ idx + 1 }}</span>
                   <span class="ranking-avatar">
-                    <img v-if="playerPhoto(item.playerName)" :src="playerPhoto(item.playerName)" :alt="item.playerName" />
+                    <img v-if="playerPhoto(item.playerName, item.avatarUrl)" :src="playerPhoto(item.playerName, item.avatarUrl)" :alt="item.playerName" />
                     <span v-else>{{ (item.playerName || '').charAt(0) }}</span>
                   </span>
                   <div class="ranking-info">
@@ -279,7 +279,7 @@
             <div class="compare-header">
               <div class="compare-player">
                 <div class="compare-avatar" style="background: #1a3a5c;">
-                  <img v-if="playerPhoto(compare.data[0].playerName)" :src="playerPhoto(compare.data[0].playerName)" :alt="compare.data[0].playerName" />
+                  <img v-if="playerPhoto(compare.data[0].playerName, compare.data[0].avatarUrl)" :src="playerPhoto(compare.data[0].playerName, compare.data[0].avatarUrl)" :alt="compare.data[0].playerName" />
                   <span v-else>{{ compare.data[0].playerName?.charAt(0) }}</span>
                 </div>
                 <div class="compare-player-name">{{ compare.data[0].playerName }}</div>
@@ -288,7 +288,7 @@
               <div class="compare-vs">VS</div>
               <div class="compare-player">
                 <div class="compare-avatar" style="background: #fa541c;">
-                  <img v-if="playerPhoto(compare.data[1].playerName)" :src="playerPhoto(compare.data[1].playerName)" :alt="compare.data[1].playerName" />
+                  <img v-if="playerPhoto(compare.data[1].playerName, compare.data[1].avatarUrl)" :src="playerPhoto(compare.data[1].playerName, compare.data[1].avatarUrl)" :alt="compare.data[1].playerName" />
                   <span v-else>{{ compare.data[1].playerName?.charAt(0) }}</span>
                 </div>
                 <div class="compare-player-name">{{ compare.data[1].playerName }}</div>
@@ -338,7 +338,7 @@
                 @click="selectDetailPlayer(item)"
               >
                 <div class="psc-avatar" :style="{ background: avatarColor(item.position) }">
-                  <img v-if="playerPhoto(item.playerName)" :src="playerPhoto(item.playerName)" :alt="item.playerName" />
+                  <img v-if="playerPhoto(item.playerName, item.avatarUrl)" :src="playerPhoto(item.playerName, item.avatarUrl)" :alt="item.playerName" />
                   <span v-else>{{ (item.playerName || '').charAt(0) }}</span>
                 </div>
                 <div class="psc-info">
@@ -355,7 +355,7 @@
             <div class="card" v-if="selectedDetailPlayer">
               <div class="detail-player-header">
                 <div class="detail-avatar" :style="{ background: avatarColor(selectedDetailPlayer.position) }">
-                  <img v-if="playerPhoto(selectedDetailPlayer.playerName)" :src="playerPhoto(selectedDetailPlayer.playerName)" :alt="selectedDetailPlayer.playerName" />
+                  <img v-if="playerPhoto(selectedDetailPlayer.playerName, selectedDetailPlayer.avatarUrl)" :src="playerPhoto(selectedDetailPlayer.playerName, selectedDetailPlayer.avatarUrl)" :alt="selectedDetailPlayer.playerName" />
                   <span v-else>{{ (selectedDetailPlayer.playerName || '').charAt(0) }}</span>
                 </div>
                 <div class="detail-basic">
@@ -423,7 +423,7 @@
       <div v-if="dialogPlayer" class="dialog-detail">
         <div class="detail-player-header">
           <div class="detail-avatar" :style="{ background: avatarColor(dialogPlayer.position) }">
-            <img v-if="playerPhoto(dialogPlayer.playerName)" :src="playerPhoto(dialogPlayer.playerName)" :alt="dialogPlayer.playerName" />
+            <img v-if="playerPhoto(dialogPlayer.playerName, dialogPlayer.avatarUrl)" :src="playerPhoto(dialogPlayer.playerName, dialogPlayer.avatarUrl)" :alt="dialogPlayer.playerName" />
             <span v-else>{{ (dialogPlayer.playerName || '').charAt(0) }}</span>
           </div>
           <div class="detail-basic">
@@ -456,6 +456,7 @@
 
 <script setup name="Stat">
 import { listStat, getTeamSummary, getStatRanking, getCompareStats, getPlayerOptions } from '@/api/stat/stat'
+import { listMatch } from '@/api/match/match'
 import { getPlayerPhoto } from '@/utils/playerPhoto'
 
 const { proxy } = getCurrentInstance()
@@ -485,13 +486,22 @@ const { queryParams } = toRefs(data)
 const teamStats = ref({})
 
 function loadTeamStats() {
-  getTeamSummary({
+  const summaryParams = {
     season: queryParams.value.season,
     competition: queryParams.value.competition || undefined
-  }).then(response => {
-    const data = response.data || {}
-    const list = data.list || []
-    const matchCounts = data.matchCounts || []
+  }
+  Promise.allSettled([
+    getTeamSummary(summaryParams),
+    listMatch({ pageNum: 1, pageSize: 1000, status: 1 })
+  ]).then(([summaryResult, matchResult]) => {
+    if (summaryResult.status !== 'fulfilled') return
+    const summaryResponse = summaryResult.value
+    const payload = summaryResponse.data || {}
+    const list = Array.isArray(payload) ? payload : (payload.list || [])
+    const reportedMatchCount = (payload.matchCounts || []).reduce((sum, item) => sum + Number(item.matchCount || 0), 0)
+    const matches = matchResult.status === 'fulfilled' ? (matchResult.value.rows || []).filter(isCompletedClubMatch) : []
+    const actualMatchCount = new Set(matches.map(match => match.id || `${match.matchDate}-${match.homeTeam}-${match.awayTeam}`)).size
+    const matchCount = matchResult.status === 'fulfilled' ? actualMatchCount : reportedMatchCount
     const totalApps = list.reduce((s, i) => s + (i.appearances || 0), 0)
     const totalStarts = list.reduce((s, i) => s + (i.starts || 0), 0)
     teamStats.value = {
@@ -501,9 +511,22 @@ function loadTeamStats() {
       totalYellowCards: list.reduce((s, i) => s + (i.yellowCards || 0), 0),
       totalRedCards: list.reduce((s, i) => s + (i.redCards || 0), 0),
       startRate: totalApps > 0 ? Math.round(totalStarts / totalApps * 100) : 0,
-      matchCount: matchCounts.reduce((s, m) => s + Number(m.matchCount || 0), 0)
+      matchCount
     }
   })
+}
+
+function isCompletedClubMatch(match) {
+  const selectedSeason = String(queryParams.value.season || '')
+  const selectedCompetition = queryParams.value.competition || ''
+  const matchTime = new Date(String(match.matchDate || '').replace(' ', 'T')).getTime()
+  const validTime = Number.isFinite(matchTime) && matchTime <= Date.now()
+  const activeRecord = match.delFlag == null || String(match.delFlag) === '0'
+  const completed = Number(match.status) === 1 && match.homeScore != null && match.awayScore != null
+  const clubMatch = match.homeTeam === '天津津门虎' || match.awayTeam === '天津津门虎'
+  const seasonMatched = !selectedSeason || String(match.season) === selectedSeason
+  const competitionMatched = !selectedCompetition || match.competitionName === selectedCompetition
+  return validTime && activeRecord && completed && clubMatch && seasonMatched && competitionMatched
 }
 
 // ======================== Tab1: 数据总览 ========================
@@ -641,8 +664,8 @@ function avatarColor(pos) {
   return map[String(pos)] || '#1a3a5c'
 }
 
-function playerPhoto(name) {
-  return getPlayerPhoto(name)
+function playerPhoto(name, avatarUrl) {
+  return getPlayerPhoto(name, avatarUrl)
 }
 
 function goalRate(row) {
