@@ -295,46 +295,51 @@ getList();
   .danger-text {
     color: #f56c6c;
   }
+}
 
-  .logo-uploader {
-    display: inline-block;
+/* ===== 弹窗上传控件样式 =====
+   弹窗 append-to-body 会把 DOM 传送到 body 下, 嵌套在 .team-logo-page 里的
+   选择器编译成 ".team-logo-page .logo-preview[data-v-xxx]" 后祖先匹配失效,
+   图片按原始尺寸渲染而变大。提为页面级 scoped 选择器后,
+   data-v 属性仍跟随传送的 DOM, 样式可正常命中。 */
+.logo-uploader {
+  display: inline-block;
+}
+
+.logo-preview {
+  display: block;
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  background: #fafafa;
+}
+
+.logo-uploader-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100px;
+  height: 100px;
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  color: #8c939d;
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+
+  &:hover {
+    border-color: #409eff;
+    color: #409eff;
   }
+}
 
-  .logo-preview {
-    display: block;
-    width: 100px;
-    height: 100px;
-    object-fit: contain;
-    border: 1px dashed #d9d9d9;
-    border-radius: 6px;
-    background: #fafafa;
-  }
-
-  .logo-uploader-placeholder {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    width: 100px;
-    height: 100px;
-    border: 1px dashed #d9d9d9;
-    border-radius: 6px;
-    color: #8c939d;
-    font-size: 12px;
-    cursor: pointer;
-    transition: border-color 0.2s;
-
-    &:hover {
-      border-color: #409eff;
-      color: #409eff;
-    }
-  }
-
-  .upload-tip {
-    font-size: 12px;
-    color: #909399;
-    line-height: 1.6;
-  }
+.upload-tip {
+  font-size: 12px;
+  color: #909399;
+  line-height: 1.6;
 }
 </style>
