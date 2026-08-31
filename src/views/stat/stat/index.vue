@@ -756,7 +756,6 @@ loadAllPlayers()
   font-weight: 400;
   color: #7f8da2;
 }
-.ranking-list { }
 .ranking-item {
   display: flex;
   align-items: center;
