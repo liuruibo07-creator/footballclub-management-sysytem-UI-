@@ -456,6 +456,7 @@
 
 <script setup name="Stat">
 import { listStat, getTeamSummary, getStatRanking, getCompareStats, getPlayerOptions } from '@/api/stat/stat'
+import { listMatch } from '@/api/match/match'
 import { getPlayerPhoto } from '@/utils/playerPhoto'
 
 const { proxy } = getCurrentInstance()
@@ -485,13 +486,22 @@ const { queryParams } = toRefs(data)
 const teamStats = ref({})
 
 function loadTeamStats() {
-  getTeamSummary({
+  const summaryParams = {
     season: queryParams.value.season,
     competition: queryParams.value.competition || undefined
-  }).then(response => {
-    const data = response.data || {}
-    const list = data.list || []
-    const matchCounts = data.matchCounts || []
+  }
+  Promise.allSettled([
+    getTeamSummary(summaryParams),
+    listMatch({ pageNum: 1, pageSize: 1000, status: 1 })
+  ]).then(([summaryResult, matchResult]) => {
+    if (summaryResult.status !== 'fulfilled') return
+    const summaryResponse = summaryResult.value
+    const payload = summaryResponse.data || {}
+    const list = Array.isArray(payload) ? payload : (payload.list || [])
+    const reportedMatchCount = (payload.matchCounts || []).reduce((sum, item) => sum + Number(item.matchCount || 0), 0)
+    const matches = matchResult.status === 'fulfilled' ? (matchResult.value.rows || []).filter(isCompletedClubMatch) : []
+    const actualMatchCount = new Set(matches.map(match => match.id || `${match.matchDate}-${match.homeTeam}-${match.awayTeam}`)).size
+    const matchCount = matchResult.status === 'fulfilled' ? actualMatchCount : reportedMatchCount
     const totalApps = list.reduce((s, i) => s + (i.appearances || 0), 0)
     const totalStarts = list.reduce((s, i) => s + (i.starts || 0), 0)
     teamStats.value = {
@@ -501,9 +511,22 @@ function loadTeamStats() {
       totalYellowCards: list.reduce((s, i) => s + (i.yellowCards || 0), 0),
       totalRedCards: list.reduce((s, i) => s + (i.redCards || 0), 0),
       startRate: totalApps > 0 ? Math.round(totalStarts / totalApps * 100) : 0,
-      matchCount: matchCounts.reduce((s, m) => s + Number(m.matchCount || 0), 0)
+      matchCount
     }
   })
+}
+
+function isCompletedClubMatch(match) {
+  const selectedSeason = String(queryParams.value.season || '')
+  const selectedCompetition = queryParams.value.competition || ''
+  const matchTime = new Date(String(match.matchDate || '').replace(' ', 'T')).getTime()
+  const validTime = Number.isFinite(matchTime) && matchTime <= Date.now()
+  const activeRecord = match.delFlag == null || String(match.delFlag) === '0'
+  const completed = Number(match.status) === 1 && match.homeScore != null && match.awayScore != null
+  const clubMatch = match.homeTeam === '天津津门虎' || match.awayTeam === '天津津门虎'
+  const seasonMatched = !selectedSeason || String(match.season) === selectedSeason
+  const competitionMatched = !selectedCompetition || match.competitionName === selectedCompetition
+  return validTime && activeRecord && completed && clubMatch && seasonMatched && competitionMatched
 }
 
 // ======================== Tab1: 数据总览 ========================
