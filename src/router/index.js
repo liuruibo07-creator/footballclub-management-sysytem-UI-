@@ -26,6 +26,17 @@ import Layout from '@/layout'
 
 // 公共路由
 export const constantRoutes = [
+  ...(import.meta.env.DEV ? [{
+    path: '/player-readiness-preview',
+    component: Layout,
+    hidden: true,
+    children: [{
+      path: '',
+      component: () => import('@/views/pp/readiness/index'),
+      name: 'PlayerReadinessPreview',
+      meta: { title: '阵容准备度', preview: true }
+    }]
+  }] : []),
   {
     path: '/redirect',
     component: Layout,
@@ -83,6 +94,20 @@ export const constantRoutes = [
 
 // 动态路由，基于用户权限动态去加载
 export const dynamicRoutes = [
+  {
+    path: '/player-readiness',
+    component: Layout,
+    hidden: true,
+    permissions: ['pp:pp:list'],
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/pp/readiness/index'),
+        name: 'PlayerReadiness',
+        meta: { title: '阵容准备度', activeMenu: '/competition/player-readiness' }
+      }
+    ]
+  },
   {
     path: '/system/user-auth',
     component: Layout,

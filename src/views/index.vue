@@ -24,6 +24,10 @@
         </div>
       </div>
 
+      <button v-if="nextMatch" class="preparation-button" type="button" @click="startPreparation">
+        进入比赛准备 <el-icon><Right /></el-icon>
+      </button>
+
       <div v-else-if="!nextMatchLoading" class="next-match-empty">暂无待进行比赛</div>
     </section>
 
@@ -232,7 +236,7 @@ function loadTodayTrainings() {
 }
 
 function startPreparation() {
-  ElMessage.success('已进入青岛西海岸赛前准备流程')
+  router.push({ name: 'PlayerReadiness' })
 }
 
 function loadPendingSchedules() {
@@ -907,6 +911,40 @@ function showMessage(target) {
   color: var(--text-secondary);
 }
 
+.preparation-button {
+  position: absolute;
+  right: 22px;
+  bottom: 18px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 0 17px;
+  border: 1px solid rgba(92, 151, 255, .55);
+  border-radius: 6px;
+  background: #2f7dff;
+  box-shadow: 0 7px 18px rgba(25, 100, 225, .24);
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background .2s, border-color .2s, transform .2s, box-shadow .2s;
+}
+
+.preparation-button:hover {
+  border-color: #82adff;
+  background: #428aff;
+  box-shadow: 0 9px 22px rgba(25, 100, 225, .34);
+  transform: translateY(-1px);
+}
+
+.preparation-button:focus-visible {
+  outline: 2px solid #9fc0ff;
+  outline-offset: 3px;
+}
+
 .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
@@ -1171,5 +1209,7 @@ function showMessage(target) {
   .todo-panel { grid-column: span 12; }
   .season-stats { grid-template-columns: 1fr 1fr; }
   .record-stat { grid-column: 1 / -1; margin-top: 18px; border-right: 0; }
+  .preparation-button { right: 50%; bottom: 14px; transform: translateX(50%); }
+  .preparation-button:hover { transform: translate(50%, -1px); }
 }
 </style>

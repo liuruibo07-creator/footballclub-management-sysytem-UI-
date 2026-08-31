@@ -87,6 +87,14 @@
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="序号" align="center" prop="id" width="55" />
       <el-table-column label="球衣号码" align="center" prop="jerseyNumber" />
+      <el-table-column label="照片" align="center" width="82">
+        <template #default="scope">
+          <span class="player-photo">
+            <img v-if="playerPhoto(scope.row.nameCn)" :src="playerPhoto(scope.row.nameCn)" :alt="scope.row.nameCn" />
+            <span v-else>{{ (scope.row.nameCn || '').charAt(0) }}</span>
+          </span>
+        </template>
+      </el-table-column>
       <el-table-column label="姓名" align="center" prop="nameCn" />
       <el-table-column label="位置" align="center" prop="position">
         <template #default="scope">
@@ -189,6 +197,7 @@
 
 <script setup name="Pp">
 import { listPp, getPp, delPp, addPp, updatePp } from "@/api/pp/pp";
+import { getPlayerPhoto } from "@/utils/playerPhoto";
 
 const { proxy } = getCurrentInstance();
 const { preferred_foot, position } = proxy.useDict('preferred_foot', 'position');
@@ -241,6 +250,10 @@ const data = reactive({
 });
 
 const { queryParams, form, rules } = toRefs(data);
+
+function playerPhoto(name) {
+  return getPlayerPhoto(name);
+}
 
 /** 查询球员档案列表 */
 function getList() {
@@ -362,3 +375,28 @@ function handleExport() {
 
 getList();
 </script>
+
+<style scoped>
+.player-photo {
+  width: 44px;
+  height: 44px;
+  margin: 2px auto;
+  border: 1px solid rgba(64, 158, 255, 0.3);
+  border-radius: 50%;
+  background: linear-gradient(145deg, #17304e, #0c192a);
+  color: #8ebeff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.player-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+</style>

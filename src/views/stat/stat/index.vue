@@ -93,6 +93,14 @@
             </template>
           </el-table-column>
           <el-table-column label="号码" align="center" prop="jerseyNumber" width="70" />
+          <el-table-column label="照片" align="center" width="76">
+            <template #default="scope">
+              <span class="table-player-photo">
+                <img v-if="playerPhoto(scope.row.playerName)" :src="playerPhoto(scope.row.playerName)" :alt="scope.row.playerName" />
+                <span v-else>{{ (scope.row.playerName || '').charAt(0) }}</span>
+              </span>
+            </template>
+          </el-table-column>
           <el-table-column label="球员姓名" align="center" prop="playerName" min-width="120">
             <template #default="scope">
               <strong>{{ scope.row.playerName }}</strong>
@@ -150,7 +158,10 @@
               <div class="ranking-list">
                 <div v-for="(item, idx) in goalRanking" :key="'g' + idx" class="ranking-item">
                   <span :class="['ranking-num', { top1: idx === 0, top2: idx === 1, top3: idx === 2 }]">{{ idx + 1 }}</span>
-                  <span class="ranking-avatar">{{ (item.playerName || '').charAt(0) }}</span>
+                  <span class="ranking-avatar">
+                    <img v-if="playerPhoto(item.playerName)" :src="playerPhoto(item.playerName)" :alt="item.playerName" />
+                    <span v-else>{{ (item.playerName || '').charAt(0) }}</span>
+                  </span>
                   <div class="ranking-info">
                     <div class="ranking-name">{{ item.playerName }}
                       <el-tag :type="posTagType(item.position)" size="small" style="margin-left: 4px;">{{ posLabel(item.position) }}</el-tag>
@@ -169,7 +180,10 @@
               <div class="ranking-list">
                 <div v-for="(item, idx) in assistRanking" :key="'a' + idx" class="ranking-item">
                   <span :class="['ranking-num', { top1: idx === 0, top2: idx === 1, top3: idx === 2 }]">{{ idx + 1 }}</span>
-                  <span class="ranking-avatar">{{ (item.playerName || '').charAt(0) }}</span>
+                  <span class="ranking-avatar">
+                    <img v-if="playerPhoto(item.playerName)" :src="playerPhoto(item.playerName)" :alt="item.playerName" />
+                    <span v-else>{{ (item.playerName || '').charAt(0) }}</span>
+                  </span>
                   <div class="ranking-info">
                     <div class="ranking-name">{{ item.playerName }}
                       <el-tag :type="posTagType(item.position)" size="small" style="margin-left: 4px;">{{ posLabel(item.position) }}</el-tag>
@@ -191,7 +205,10 @@
               <div class="ranking-list">
                 <div v-for="(item, idx) in minutesRanking" :key="'m' + idx" class="ranking-item">
                   <span :class="['ranking-num', { top1: idx === 0, top2: idx === 1, top3: idx === 2 }]">{{ idx + 1 }}</span>
-                  <span class="ranking-avatar">{{ (item.playerName || '').charAt(0) }}</span>
+                  <span class="ranking-avatar">
+                    <img v-if="playerPhoto(item.playerName)" :src="playerPhoto(item.playerName)" :alt="item.playerName" />
+                    <span v-else>{{ (item.playerName || '').charAt(0) }}</span>
+                  </span>
                   <div class="ranking-info">
                     <div class="ranking-name">{{ item.playerName }}</div>
                     <div class="ranking-sub">{{ item.jerseyNumber }}号 · {{ item.starts }}首发/{{ item.appearances - item.starts }}替补</div>
@@ -208,7 +225,10 @@
               <div class="ranking-list">
                 <div v-for="(item, idx) in yellowRanking" :key="'y' + idx" class="ranking-item">
                   <span :class="['ranking-num', { top1: idx === 0, top2: idx === 1, top3: idx === 2 }]">{{ idx + 1 }}</span>
-                  <span class="ranking-avatar">{{ (item.playerName || '').charAt(0) }}</span>
+                  <span class="ranking-avatar">
+                    <img v-if="playerPhoto(item.playerName)" :src="playerPhoto(item.playerName)" :alt="item.playerName" />
+                    <span v-else>{{ (item.playerName || '').charAt(0) }}</span>
+                  </span>
                   <div class="ranking-info">
                     <div class="ranking-name">{{ item.playerName }}</div>
                     <div class="ranking-sub">{{ item.jerseyNumber }}号 · {{ posLabel(item.position) }}</div>
@@ -258,13 +278,19 @@
           <div v-if="compare.data.length === 2" class="compare-result">
             <div class="compare-header">
               <div class="compare-player">
-                <div class="compare-avatar" style="background: #1a3a5c;">{{ compare.data[0].playerName?.charAt(0) }}</div>
+                <div class="compare-avatar" style="background: #1a3a5c;">
+                  <img v-if="playerPhoto(compare.data[0].playerName)" :src="playerPhoto(compare.data[0].playerName)" :alt="compare.data[0].playerName" />
+                  <span v-else>{{ compare.data[0].playerName?.charAt(0) }}</span>
+                </div>
                 <div class="compare-player-name">{{ compare.data[0].playerName }}</div>
                 <div class="compare-player-sub">{{ compare.data[0].jerseyNumber }}号 · {{ posLabel(compare.data[0].position) }}</div>
               </div>
               <div class="compare-vs">VS</div>
               <div class="compare-player">
-                <div class="compare-avatar" style="background: #fa541c;">{{ compare.data[1].playerName?.charAt(0) }}</div>
+                <div class="compare-avatar" style="background: #fa541c;">
+                  <img v-if="playerPhoto(compare.data[1].playerName)" :src="playerPhoto(compare.data[1].playerName)" :alt="compare.data[1].playerName" />
+                  <span v-else>{{ compare.data[1].playerName?.charAt(0) }}</span>
+                </div>
                 <div class="compare-player-name">{{ compare.data[1].playerName }}</div>
                 <div class="compare-player-sub">{{ compare.data[1].jerseyNumber }}号 · {{ posLabel(compare.data[1].position) }}</div>
               </div>
@@ -311,7 +337,10 @@
                 :class="['player-select-card', { selected: selectedDetailPlayer?.id === item.id }]"
                 @click="selectDetailPlayer(item)"
               >
-                <div class="psc-avatar" :style="{ background: avatarColor(item.position) }">{{ (item.playerName || '').charAt(0) }}</div>
+                <div class="psc-avatar" :style="{ background: avatarColor(item.position) }">
+                  <img v-if="playerPhoto(item.playerName)" :src="playerPhoto(item.playerName)" :alt="item.playerName" />
+                  <span v-else>{{ (item.playerName || '').charAt(0) }}</span>
+                </div>
                 <div class="psc-info">
                   <div class="psc-name">{{ item.playerName }}
                     <el-tag :type="posTagType(item.position)" size="small" style="margin-left: 4px;">{{ posLabel(item.position) }}</el-tag>
@@ -326,7 +355,8 @@
             <div class="card" v-if="selectedDetailPlayer">
               <div class="detail-player-header">
                 <div class="detail-avatar" :style="{ background: avatarColor(selectedDetailPlayer.position) }">
-                  {{ (selectedDetailPlayer.playerName || '').charAt(0) }}
+                  <img v-if="playerPhoto(selectedDetailPlayer.playerName)" :src="playerPhoto(selectedDetailPlayer.playerName)" :alt="selectedDetailPlayer.playerName" />
+                  <span v-else>{{ (selectedDetailPlayer.playerName || '').charAt(0) }}</span>
                 </div>
                 <div class="detail-basic">
                   <h3>{{ selectedDetailPlayer.playerName }}</h3>
@@ -393,7 +423,8 @@
       <div v-if="dialogPlayer" class="dialog-detail">
         <div class="detail-player-header">
           <div class="detail-avatar" :style="{ background: avatarColor(dialogPlayer.position) }">
-            {{ (dialogPlayer.playerName || '').charAt(0) }}
+            <img v-if="playerPhoto(dialogPlayer.playerName)" :src="playerPhoto(dialogPlayer.playerName)" :alt="dialogPlayer.playerName" />
+            <span v-else>{{ (dialogPlayer.playerName || '').charAt(0) }}</span>
           </div>
           <div class="detail-basic">
             <h3>{{ dialogPlayer.playerName }}</h3>
@@ -425,6 +456,7 @@
 
 <script setup name="Stat">
 import { listStat, getTeamSummary, getStatRanking, getCompareStats, getPlayerOptions } from '@/api/stat/stat'
+import { getPlayerPhoto } from '@/utils/playerPhoto'
 
 const { proxy } = getCurrentInstance()
 
@@ -607,6 +639,10 @@ function avatarColor(pos) {
   return map[String(pos)] || '#1a3a5c'
 }
 
+function playerPhoto(name) {
+  return getPlayerPhoto(name)
+}
+
 function goalRate(row) {
   return row.appearances > 0 ? row.goals / row.appearances : 0
 }
@@ -754,6 +790,7 @@ loadAllPlayers()
   font-size: 14px;
   font-weight: 600;
   margin-right: 12px;
+  overflow: hidden;
 }
 .ranking-info { flex: 1; }
 .ranking-name { font-size: 14px; font-weight: 600; color: #e9eef6; }
@@ -793,6 +830,7 @@ loadAllPlayers()
   font-size: 24px;
   font-weight: 700;
   margin: 0 auto 8px;
+  overflow: hidden;
 }
 .compare-player-name { font-size: 16px; font-weight: 700; }
 .compare-player-sub { font-size: 12px; color: #7f8da2; }
@@ -877,6 +915,7 @@ loadAllPlayers()
   font-size: 16px;
   font-weight: 600;
   flex-shrink: 0;
+  overflow: hidden;
 }
 .psc-info { flex: 1; }
 .psc-name { font-size: 14px; font-weight: 600; }
@@ -901,6 +940,34 @@ loadAllPlayers()
   font-size: 28px;
   font-weight: 700;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.table-player-photo {
+  width: 40px;
+  height: 40px;
+  margin: 2px auto;
+  border: 1px solid rgba(64, 158, 255, 0.3);
+  border-radius: 50%;
+  background: linear-gradient(145deg, #17304e, #0c192a);
+  color: #8ebeff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.table-player-photo img,
+.ranking-avatar img,
+.compare-avatar img,
+.psc-avatar img,
+.detail-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
 }
 .detail-basic { flex: 1; }
 .detail-basic h3 { font-size: 18px; margin: 0 0 6px; }
