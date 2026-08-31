@@ -30,11 +30,20 @@ const photoFiles = {
   '刘俊贤': '刘俊贤.jpg'
 }
 
-export function getPlayerPhoto(name) {
+function uploadedPhotoUrl(avatarUrl) {
+  if (!avatarUrl) return ''
+  if (/^(https?:|data:|blob:)/i.test(avatarUrl)) return avatarUrl
+  const baseUrl = import.meta.env.VITE_APP_BASE_API || ''
+  return `${baseUrl}${avatarUrl.startsWith('/') ? '' : '/'}${avatarUrl}`
+}
+
+export function getPlayerPhoto(name, avatarUrl) {
+  const uploaded = uploadedPhotoUrl(avatarUrl)
+  if (uploaded) return uploaded
   const file = photoFiles[name]
   return file ? `/player-photos/${encodeURIComponent(file)}` : ''
 }
 
-export function hasPlayerPhoto(name) {
-  return Boolean(photoFiles[name])
+export function hasPlayerPhoto(name, avatarUrl) {
+  return Boolean(avatarUrl || photoFiles[name])
 }

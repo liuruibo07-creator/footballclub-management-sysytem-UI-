@@ -63,8 +63,8 @@
         <section class="profile-panel surface-panel">
           <div class="player-portrait-wrap">
             <img
-              v-if="playerPhoto(selectedPlayer.nameCn)"
-              :src="playerPhoto(selectedPlayer.nameCn)"
+              v-if="playerPhoto(selectedPlayer.nameCn, selectedPlayer.avatarUrl)"
+              :src="playerPhoto(selectedPlayer.nameCn, selectedPlayer.avatarUrl)"
               :alt="selectedPlayer.nameCn"
               class="player-portrait"
             />
@@ -124,6 +124,7 @@
               <strong :class="ratingClass(match.rating)">{{ match.rating.toFixed(1) }}</strong>
               <small>{{ match.contribution }}</small>
             </div>
+            <div v-if="!recentForm.length" class="recent-form-empty">暂无已结束比赛</div>
           </div>
         </section>
 
@@ -167,7 +168,7 @@
         <div v-if="comparePlayer" class="comparison">
           <div class="compare-players">
             <div v-for="player in [selectedPlayer, comparePlayer]" :key="player.id">
-              <img v-if="playerPhoto(player.nameCn)" :src="playerPhoto(player.nameCn)" :alt="player.nameCn" />
+              <img v-if="playerPhoto(player.nameCn, player.avatarUrl)" :src="playerPhoto(player.nameCn, player.avatarUrl)" :alt="player.nameCn" />
               <strong>{{ player.nameCn }}</strong>
               <span>准备度 {{ readinessFor(player).score }}%</span>
             </div>
@@ -234,7 +235,7 @@
             <div v-for="player in starterPlayers" :key="`dialog-starter-${player.id}`" class="dialog-roster-player">
               <button type="button" @click="selectRosterPlayer(player.id)">
                 <span class="dialog-player-photo">
-                  <img v-if="playerPhoto(player.nameCn)" :src="playerPhoto(player.nameCn)" :alt="player.nameCn" />
+                  <img v-if="playerPhoto(player.nameCn, player.avatarUrl)" :src="playerPhoto(player.nameCn, player.avatarUrl)" :alt="player.nameCn" />
                   <span v-else>{{ (player.nameCn || '').charAt(0) }}</span>
                 </span>
                 <span class="dialog-player-info">
@@ -257,7 +258,7 @@
             <div v-for="player in substitutePlayers" :key="`dialog-substitute-${player.id}`" class="dialog-roster-player">
               <button type="button" @click="selectRosterPlayer(player.id)">
                 <span class="dialog-player-photo">
-                  <img v-if="playerPhoto(player.nameCn)" :src="playerPhoto(player.nameCn)" :alt="player.nameCn" />
+                  <img v-if="playerPhoto(player.nameCn, player.avatarUrl)" :src="playerPhoto(player.nameCn, player.avatarUrl)" :alt="player.nameCn" />
                   <span v-else>{{ (player.nameCn || '').charAt(0) }}</span>
                 </span>
                 <span class="dialog-player-info">
@@ -301,7 +302,9 @@ const lineupChoice = ref('')
 const starterIds = ref([])
 const substituteIds = ref([])
 const rosterDialogVisible = ref(false)
+const currentTimestamp = ref(Date.now())
 const squadLimit = 23
+let currentTimeTimer = null
 
 const positionOptions = [
   { label: '守门员', value: '0' },
@@ -346,16 +349,17 @@ const comparisonMetrics = computed(() => {
 
 const recentForm = computed(() => {
   if (!selectedPlayer.value) return []
-  const source = completedMatches.value.slice(0, 5)
-  const fallback = Array.from({ length: 5 }, (_, index) => ({
-    id: `fallback-${index}`,
-    matchDate: offsetDate(-7 * (index + 1)),
-    homeTeam: index % 2 ? '天津津门虎' : `对手${index + 1}`,
-    awayTeam: index % 2 ? `对手${index + 1}` : '天津津门虎',
-    homeScore: index % 3,
-    awayScore: (index + 1) % 3
-  }))
-  return (source.length ? source : fallback).map((match, index) => {
+  const source = completedMatches.value
+    .filter(match => {
+      const timestamp = matchTimestamp(match.matchDate)
+      const completed = match.status == null || Number(match.status) === 1
+      const activeRecord = match.delFlag == null || String(match.delFlag) === '0'
+      const clubMatch = match.homeTeam === '天津津门虎' || match.awayTeam === '天津津门虎'
+      return completed && activeRecord && clubMatch && timestamp > 0 && timestamp <= currentTimestamp.value
+    })
+    .sort((a, b) => matchTimestamp(b.matchDate) - matchTimestamp(a.matchDate))
+    .slice(0, 5)
+  return source.map((match, index) => {
     const rating = generatedRating(selectedPlayer.value, match, index)
     const opponent = match.homeTeam === '天津津门虎' ? match.awayTeam : match.homeTeam
     const playerContribution = generatedContribution(selectedPlayer.value, match, index)
@@ -389,8 +393,14 @@ function num(value) {
   return Number(value || 0)
 }
 
-function playerPhoto(name) {
-  return getPlayerPhoto(name)
+function playerPhoto(name, avatarUrl) {
+  return getPlayerPhoto(name, avatarUrl)
+}
+
+function matchTimestamp(value) {
+  if (!value) return 0
+  const timestamp = new Date(String(value).replace(' ', 'T')).getTime()
+  return Number.isNaN(timestamp) ? 0 : timestamp
 }
 
 function findPlayer(id) {
@@ -584,12 +594,6 @@ function formatDateTime(value) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
 }
 
-function offsetDate(days) {
-  const date = new Date()
-  date.setDate(date.getDate() + days)
-  return date.toISOString()
-}
-
 function selectPlayer(id) {
   selectedPlayerId.value = id
   lineupChoice.value = lineupTypeFor(id)
@@ -657,7 +661,7 @@ async function loadData() {
   const [playerResult, nextResult, matchResult] = await Promise.allSettled([
     listPp({ pageNum: 1, pageSize: 1000 }),
     getNextMatch(),
-    listMatch({ pageNum: 1, pageSize: 5, status: 1 })
+    listMatch({ pageNum: 1, pageSize: 1000, status: 1 })
   ])
   if (playerResult.status === 'fulfilled') {
     players.value = playerResult.value.rows || []
@@ -713,6 +717,14 @@ function buildPreviewMatches() {
 }
 
 loadData()
+onMounted(() => {
+  currentTimeTimer = window.setInterval(() => {
+    currentTimestamp.value = Date.now()
+  }, 60000)
+})
+onBeforeUnmount(() => {
+  if (currentTimeTimer) window.clearInterval(currentTimeTimer)
+})
 </script>
 
 <style scoped lang="scss">
@@ -875,6 +887,7 @@ h3 { margin: 0; font-size: 15px; }
 .form-strip { min-width: 0; display: grid; grid-template-columns: repeat(5, minmax(90px, 1fr)); border: 1px solid var(--fc-border-soft); border-radius: 5px; overflow-x: auto; overflow-y: hidden; }
 .match-form-item { min-height: 92px; padding: 10px 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border-right: 1px solid var(--fc-border-soft); }
 .match-form-item:last-child { border-right: 0; }
+.recent-form-empty { grid-column: 1 / -1; min-height: 92px; display: grid; place-items: center; color: var(--fc-text-muted); font-size: 12px; }
 .match-form-item > span,
 .match-form-item small { color: var(--fc-text-muted); font-size: 11px; }
 .match-form-item strong { font-size: 22px; }
