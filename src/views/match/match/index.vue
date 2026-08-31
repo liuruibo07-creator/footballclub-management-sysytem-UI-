@@ -103,10 +103,36 @@
           </el-date-picker>
         </el-form-item>
         <el-form-item label="主队" prop="homeTeam">
-          <el-input v-model="form.homeTeam" placeholder="请输入主队" />
+          <el-select
+            v-model="form.homeTeam"
+            filterable
+            clearable
+            placeholder="请选择主队(来自联赛球队)"
+            @change="onHomeTeamChange"
+          >
+            <el-option
+              v-for="t in leagueTeamOptions"
+              :key="t.id"
+              :label="t.teamName"
+              :value="t.teamName"
+            />
+          </el-select>
         </el-form-item>
         <el-form-item label="客队" prop="awayTeam">
-          <el-input v-model="form.awayTeam" placeholder="请输入客队" />
+          <el-select
+            v-model="form.awayTeam"
+            filterable
+            clearable
+            placeholder="请选择客队(来自联赛球队)"
+            @change="onAwayTeamChange"
+          >
+            <el-option
+              v-for="t in leagueTeamOptions"
+              :key="t.id"
+              :label="t.teamName"
+              :value="t.teamName"
+            />
+          </el-select>
         </el-form-item>
         <el-form-item label="状态" prop="status">
           <el-radio-group v-model="form.status">
@@ -155,6 +181,7 @@
 <script setup name="Match">
 import { listMatch, addMatch, updateMatch } from "@/api/match/match";
 import { listTeamLogo } from "@/api/match/teamLogo";
+import { optionselectLeagueTeam } from "@/api/league/team";
 
 const { proxy } = getCurrentInstance();
 const route = useRoute();
@@ -187,6 +214,39 @@ function loadTeamLogos() {
 }
 loadTeamLogos();
 
+// 联赛球队下拉选项(主客队下拉框数据源, 来自联赛球队管理)
+const leagueTeamOptions = ref([]);
+
+/** 加载联赛球队下拉选项 */
+function loadLeagueTeams() {
+  optionselectLeagueTeam().then(response => {
+    leagueTeamOptions.value = response.data || [];
+  }).catch(() => {});
+}
+loadLeagueTeams();
+
+/** 主队校验: 必填且不能与客队相同 */
+function validateHomeTeam(rule, value, callback) {
+  if (!value) {
+    return callback(new Error("主队不能为空"));
+  }
+  if (form.value.awayTeam && value === form.value.awayTeam) {
+    return callback(new Error("主队不能与客队相同"));
+  }
+  callback();
+}
+
+/** 客队校验: 必填且不能与主队相同 */
+function validateAwayTeam(rule, value, callback) {
+  if (!value) {
+    return callback(new Error("客队不能为空"));
+  }
+  if (form.value.homeTeam && value === form.value.homeTeam) {
+    return callback(new Error("客队不能与主队相同"));
+  }
+  callback();
+}
+
 const data = reactive({
   form: {},
   queryParams: {
@@ -203,10 +263,10 @@ const data = reactive({
       { required: true, message: "比赛时间不能为空", trigger: "blur" }
     ],
     homeTeam: [
-      { required: true, message: "主队不能为空", trigger: "blur" }
+      { required: true, validator: validateHomeTeam, trigger: "change" }
     ],
     awayTeam: [
-      { required: true, message: "客队不能为空", trigger: "blur" }
+      { required: true, validator: validateAwayTeam, trigger: "change" }
     ],
     status: [
       { required: true, message: "状态不能为空", trigger: "change" }
@@ -323,6 +383,16 @@ function handleAdd() {
   reset();
   open.value = true;
   title.value = "添加比赛管理";
+}
+
+/** 主队变化后重新校验客队(同队校验) */
+function onHomeTeamChange() {
+  proxy.$refs["matchRef"].validateField("awayTeam");
+}
+
+/** 客队变化后重新校验主队(同队校验) */
+function onAwayTeamChange() {
+  proxy.$refs["matchRef"].validateField("homeTeam");
 }
 
 /** 提交按钮操作 */
