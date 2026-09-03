@@ -293,19 +293,19 @@ function formatTrainingTime(dateTime) {
 }
 
 function viewAllSchedules() {
-  router.push({ path: '/cm/competition/event', query: { status: '0' } })
+  router.push({ path: '/competition/event', query: { status: '0' } })
 }
 
 function viewAllMatches() {
-  router.push({ path: '/cm/competition/match', query: { status: '1' } })
+  router.push({ path: '/competition/match', query: { status: '1' } })
 }
 
 function viewTraining() {
-  router.push('/cm/competition/trainingmanagement')
+  router.push('/competition/trainingmanagement')
 }
 
 function viewInjuries() {
-  router.push('/cm/team/injury')
+  router.push('/team/injury')
 }
 
 /** 加载球队队徽映射(队名 -> OSS完整URL) */
